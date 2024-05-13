@@ -1,50 +1,42 @@
 package com.naver;
-
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.*;
+import java.awt.*;
+import java.net.URL;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 
 /**
- * Java Swing application with two buttons.
+ * Java Swing application with two buttons and dialog messages.
  */
 public class JavaNaver {
 
-    public static void main(String[] args) {
-        // 프레임 생성 및 타이틀 설정
-        JFrame frame = new JFrame("Button Example");
+ public static void main(String[] args) {
+        // 프레임 설정
+        JFrame frame = new JFrame("Naver Static Map Example");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(300, 150);  // 크기 설정
+        frame.setSize(700, 800);  // 프레임의 크기 지정
 
-        // 버튼 추가
-        JButton button1 = new JButton("Button 1");
-        JButton button2 = new JButton("Button 2");
+        // 네이버 지도 API 사용
+        try {
+            // 클라이언트 ID 설정 (네이버 클라우드 플랫폼에서 발급받은 ID)
+String clientId = "5bt0m1r7kk";
+String clientSecret = "gxArtOeB8YTQrtpI5vNwZPPKaXSdcOANdDKRUhHX"; // 발급받은 클라이언트 시크릿
+String mapUrl = "https://naveropenapi.apigw.ntruss.com/map-static/v2/raster?"
+                + "w=700&h=800&center=127.1054328,37.3595963&level=16"
+                + "&X-NCP-APIGW-API-KEY-ID=" + clientId
+                + "&X-NCP-APIGW-API-KEY=" + clientSecret;
 
-        // 버튼에 액션 리스너 추가
-        button1.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("Button 1 clicked");
-            }
-        });
 
-        button2.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("Button 2 clicked");
-            }
-        });
+            // URL 객체 생성 및 이미지 다운로드
+            URL url = new URL(mapUrl);
+            BufferedImage image = ImageIO.read(url);  // URL에서 이미지 읽기
+            JLabel label = new JLabel(new ImageIcon(image));  // 이미지를 아이콘으로 설정해 라벨 생성
 
-        // 패널에 버튼 추가
-        JPanel panel = new JPanel();
-        panel.setLayout(new FlowLayout());
-        panel.add(button1);
-        panel.add(button2);
-
-        // 프레임에 패널 추가
-        frame.add(panel);
+            // 라벨을 프레임의 중앙에 추가
+            frame.getContentPane().add(label, BorderLayout.CENTER);
+        } catch (Exception e) {
+            e.printStackTrace();  // 예외 발생 시 스택 추적 출력
+        }
 
         // 프레임 보이기 설정
         frame.setVisible(true);
