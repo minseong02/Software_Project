@@ -2,7 +2,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package buisness;
+package buisness_package;
+import HotelBS_package.HotelBS;
+import CarBS_package.CarBS;
+import AirplaneBS_package.AirplaneBS;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
@@ -76,20 +79,12 @@ public class Business_Choice extends JFrame{
             }
         });
       
-        
-        
+       
         
         mb.add(screenmenu);
         setJMenuBar(mb);
-        
-  
-        
-        
+         
         
     }
-
-       
-       
-    
-    
+ 
 }
