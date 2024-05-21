@@ -4,6 +4,7 @@
  */
 package reserve.login;
 
+import manager.ManagerMode;
 import buisness.Business_Choice;
 import java.awt.BorderLayout;
 import java.awt.Font;
@@ -249,7 +250,7 @@ public class Login extends javax.swing.JFrame {
                     
                     if (managerInfo.get(i).getID().equals(ID) && managerInfo.get(i).getPW().equals(PW)) {
                         JOptionPane.showMessageDialog(null, "로그인 되었습니다.");
-                        Manager click = new Manager();
+                        ManagerMode click = new ManagerMode();
                         click.setVisible(true);                
                         dispose();
                         break;
