@@ -5,7 +5,7 @@
 package reserve.login;
 
 import manager.ManagerMode;
-import buisness.Business_Choice;
+import buisness_package.Business_Choice;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;

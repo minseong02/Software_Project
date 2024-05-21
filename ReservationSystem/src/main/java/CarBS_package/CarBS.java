@@ -2,24 +2,29 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package buisness;
+package CarBS_package;
+
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.FileDialog;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.nio.file.Files;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
@@ -29,12 +34,48 @@ import javax.swing.table.DefaultTableModel;
  * @author mskim
  */
 public class CarBS extends JPanel{
+    
+    private CarBS_information carInfo;
+    private JTextField car_company;
+    private JComboBox rental_time_combo;
+    private JTextField car_cost;
+    private JComboBox vehicle_type_combo;
+    private JRadioButton gasoline;
+    private JRadioButton diesel;
+    private JRadioButton electricity;
+    private JRadioButton yes;
+    private JRadioButton no;
+    private JTextField register;
+    private JComboBox search_combo;
+    private JTextField search_text;
+    private JButton searchBT;
+    private DefaultTableModel car_model;
+    private JTable car_table;
+    private JScrollPane car_scrollpane;
+    private String file;
+    
+    
+    
+    
+
+    
     public CarBS(){
         super(new BorderLayout());
+        
+        String[]rental_time={"::대여 시간::","12시간","24시간","30시간","36시간","42시간","48시간"};
+        String[]vehicle_type = {"::차종::","모닝","레이","아반떼","쏘나타","그랜저","쏘렌토","스타리아","아이오닉","코나","레이"};
+        
+        carInfo = new CarBS_information(rental_time,vehicle_type);
+        
+        vehicle_type_combo = new JComboBox();
+        file = "car_business_textfile";
+       
+        
         rentalcar_list();
     }
     
-    void rentalcar_list(){
+    private void rentalcar_list(){
+        
         setLayout(null);
         
         // 이미지를 표시할 JLabel//
@@ -48,20 +89,16 @@ public class CarBS extends JPanel{
         JPanel input_panel = new JPanel();
         input_panel.setBorder(new TitledBorder(new LineBorder(Color.gray,1),"입력"));
         input_panel.setLayout(new GridLayout(5,4,10,15));
-        
-        input_panel.add(new JLabel("비즈니스 넘버"));
-        JTextField  Car_BS_num = new JTextField();
-        input_panel.add(Car_BS_num);
+    
         
         input_panel.add(new JLabel("자동차 회사"));
-        JTextField car_company = new JTextField();
+        car_company = carInfo.getCarCompany();
         input_panel.add(car_company);
         
         input_panel.add(new JLabel("대여 시간"));
         JPanel rental_time_Panel = new JPanel();
         rental_time_Panel.setLayout(new GridLayout(1, 2));
-        String [] rental_time= {"::대여 시간::","12시간","24시간","30시간","36시간","42시간","48시간"};
-        JComboBox rental_time_combo = new JComboBox(rental_time);
+        rental_time_combo = carInfo.getRentalTime();
         rental_time_Panel.add(rental_time_combo);
         input_panel.add(rental_time_Panel);
         
@@ -69,7 +106,7 @@ public class CarBS extends JPanel{
         input_panel.add(new JLabel("비용"));
         JPanel car_costPanel = new JPanel();
         car_costPanel.setLayout(new GridLayout(1, 2));
-        JTextField car_cost = new JTextField();
+        car_cost = carInfo.getCarCost();
         car_costPanel.add(car_cost);
         car_costPanel.add(new JLabel(" 원"));
         input_panel.add(car_costPanel);
@@ -77,8 +114,7 @@ public class CarBS extends JPanel{
         input_panel.add(new JLabel("차종"));
         JPanel vehicle_type_Panel = new JPanel();
         vehicle_type_Panel.setLayout(new GridLayout(1, 2));
-        String [] vehicle_type = {"::차종::","모닝","레이","아반떼","쏘나타","그랜저","쏘렌토","스타리아","아이오닉","코나","레이"};
-        JComboBox vehicle_type_combo = new JComboBox(vehicle_type);
+        vehicle_type_combo = carInfo.getVehicleType();
         input_panel.add(vehicle_type_combo);
         
         // 모닝, 레이, 아반떼, 쏘나타, 그랜저 : 휘발유
@@ -89,9 +125,9 @@ public class CarBS extends JPanel{
         JPanel oil_Panel = new JPanel();
         oil_Panel.setLayout(new GridLayout(1,3));
         ButtonGroup oil_Group = new ButtonGroup();
-        JRadioButton gasoline = new JRadioButton("휘발유");
-        JRadioButton diesel = new JRadioButton("경유");
-        JRadioButton electricity = new JRadioButton("전기");
+        gasoline = carInfo.getGasoline();
+        diesel = carInfo.getDiesel();
+        electricity = carInfo.getElectricity();
         
         oil_Group.add(gasoline);
         oil_Group.add(diesel);
@@ -108,8 +144,8 @@ public class CarBS extends JPanel{
         JPanel high_pass_Panel = new JPanel();
         high_pass_Panel.setLayout(new GridLayout(1,2));
         ButtonGroup high_pass_Group = new ButtonGroup();
-        JRadioButton yes = new JRadioButton("O");
-        JRadioButton no = new JRadioButton("X");
+        yes = carInfo.getYes();
+        no = carInfo.getNo();
         
         high_pass_Group.add(yes);
         high_pass_Group.add(no);
@@ -121,13 +157,23 @@ public class CarBS extends JPanel{
         
         
         input_panel.add(new JLabel("등록 여부"));
-        JTextField register = new JTextField();
+        register = carInfo.getCarRegister();
         input_panel.add(register);
         
         // 사진 등록
         input_panel.add(new JLabel("렌터카 대표 사진"));
-        JTextField car_photo = new JTextField();
-        input_panel.add(car_photo);
+        JButton btnOpen = new JButton("사진 등록");
+        input_panel.add(btnOpen);
+        
+        btnOpen.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                FileDialog file_open = new FileDialog((JFrame) SwingUtilities.getWindowAncestor(CarBS.this), "사진 등록", FileDialog.LOAD);
+                file_open.setVisible(true);
+                
+                String path = file_open.getDirectory();
+            }
+        });
         
         
         input_panel.setBounds(15,75,655,300);
@@ -139,15 +185,15 @@ public class CarBS extends JPanel{
         
         // 콤보 박스
         String [] search = {"비즈니스 넘버", "자동차 회사"};
-        JComboBox search_combo = new JComboBox(search);
+        search_combo = new JComboBox(search);
         search_panel.add(search_combo);
         
         // 검색 텍스트 필드
-        JTextField search_text = new JTextField(30);
+        search_text = new JTextField(30);
         search_panel.add(search_text);
         
         // 조회 버튼
-        JButton searchBT = new JButton("조회");
+        searchBT = new JButton("조회");
         search_panel.add(searchBT);
         
         search_panel.setBounds(15,400,655,50);
@@ -159,9 +205,9 @@ public class CarBS extends JPanel{
         String header[] = {"비즈니스 넘버", "자동차 회사", "대여시간","비용","차종","연료","하이패스","등록 여부"};
         String contents[][]={};
         
-        DefaultTableModel car_model = new DefaultTableModel(contents, header);
-        JTable car_table = new JTable(car_model);
-        JScrollPane car_scrollpane = new JScrollPane(car_table);
+        car_model = new DefaultTableModel(contents, header);
+        car_table = new JTable(car_model);
+        car_scrollpane = new JScrollPane(car_table);
         car_list_panel.add(car_scrollpane, BorderLayout.CENTER);
 
         car_list_panel.setBounds(15,450,655,230);
@@ -187,6 +233,14 @@ public class CarBS extends JPanel{
         south_panel.setBounds(150,690,400,50);
         add(south_panel);
         
+        addBT.addActionListener(new ActionListener(){ // 추가 버튼 눌렀을 때
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                add(car_table);
+            }
+            
+        });
+        
         
         
         
@@ -195,4 +249,16 @@ public class CarBS extends JPanel{
         
     }
     
+    /*
+    private void add(JTable car_table){
+        try{
+            Path filepath = Path.get(file);
+            long lineCount = Files.lines(filepath).count()+1;
+            
+            String carcompany = carInfo.getCarCompany().getText();
+        }
+    }
+*/
+    
 }
+
