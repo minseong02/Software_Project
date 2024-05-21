@@ -24,7 +24,7 @@ ArrayList<String> readInfo = new ArrayList<>();
 ArrayList<ManagerData> managerInfo = new ArrayList<>();
 
 private String line;
-private String ManagerFile = "C:\\ReservationSystem\\File\\ManagerInfo.txt";
+private String ManagerFile = "File/ManagerInfo.txt";
     @Override
     public void fRead() {
         try {

@@ -24,7 +24,7 @@ ArrayList<String> readInfo = new ArrayList<>();
 ArrayList<UserData> userInfo = new ArrayList<>();
 
 private String line;
-private String UserFile = "C:\\ReservationSystem\\File\\UserInfo.txt";
+private String UserFile = "File/UserInfo.txt";
 
     @Override
     public void fRead() {

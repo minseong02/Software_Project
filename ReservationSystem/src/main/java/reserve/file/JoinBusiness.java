@@ -24,7 +24,7 @@ ArrayList<String> readInfo = new ArrayList<>();
 ArrayList<BusinessData> businessInfo = new ArrayList<>();
 
 private String line;
-private String BusinessFile = "C:\\ReservationSystem\\File\\BusinessInfo.txt";
+private String BusinessFile = "File/BusinessInfo.txt";
 
     @Override
     public void fRead() {
