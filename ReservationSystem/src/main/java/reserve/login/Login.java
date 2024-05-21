@@ -225,24 +225,10 @@ public class Login extends javax.swing.JFrame {
                     if(userInfo.get(j).getID().equals(ID) && userInfo.get(j).getPW().equals(PW)){
                         JOptionPane.showMessageDialog(null, "로그인 되었습니다.");
                         JFrame frame = new JFrame();
-                        
                         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                         frame.setSize(700, 800);
-                        
-                        JPanel mainPanel = new JPanel();
-                        mainPanel.setLayout(new BorderLayout());
-                        
-                        JButton proceedButton = new JButton("예약 시스템으로 이동");
-                        proceedButton.setFont(new Font("Serif", Font.PLAIN, 20));
-                        proceedButton.addActionListener(new ActionListener(){
-                        @Override
-                            public void actionPerformed(ActionEvent e) {
-                                JavaNaver.openReservationSystem(frame);
-                            }
-                        });
-                        
-                        mainPanel.add(proceedButton, BorderLayout.SOUTH);
-                        frame.add(mainPanel);
+                        frame.setLocationRelativeTo(null);
+                        JavaNaver.openReservationSystem(frame);
                         frame.setVisible(true);
                         dispose();
                         break;
