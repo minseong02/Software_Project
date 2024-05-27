@@ -11,9 +11,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JOptionPane;
+import manager.ManagerMode;
 import reserve.data.ManagerData;
-import reserve.file.CreateInterface;
-
 /**
  *
  * @author 민석
@@ -21,10 +22,27 @@ import reserve.file.CreateInterface;
 public class JoinManager implements CreateInterface {
 
 ArrayList<String> readInfo = new ArrayList<>();
-ArrayList<ManagerData> managerInfo = new ArrayList<>();
+private List<ManagerData> managerInfo;
+private static JoinManager instance;
+
+public JoinManager(List<ManagerData> managerInfo){
+    this.managerInfo = managerInfo;
+}
+
+public JoinManager(){
+    managerInfo = new ArrayList<>();
+}
+
+public static JoinManager getInstance(){
+    if(instance == null){
+        instance = new JoinManager();
+    }
+    return instance;
+}
 
 private String line;
 private String ManagerFile = "File/ManagerInfo.txt";
+
     @Override
     public void fRead() {
         try {
@@ -32,7 +50,6 @@ private String ManagerFile = "File/ManagerInfo.txt";
                 while ((line = fileread.readLine())!=null ){
                     readInfo.add(line);
                 }
-                fileread.close();
         }
         
         catch(FileNotFoundException a) { 
@@ -55,7 +72,6 @@ private String ManagerFile = "File/ManagerInfo.txt";
         
     @Override
     public void sPlite() {String line;
-        System.out.println(readInfo.size());
         for(int i = 0 ; i <readInfo.size(); i ++){
             line  = readInfo.get(i);
             String[] str = line.split("\\|"); 
@@ -63,7 +79,28 @@ private String ManagerFile = "File/ManagerInfo.txt";
         }
     }
     
-    public ArrayList<ManagerData> returnManagerInfo() throws IOException {
+    public List<ManagerData> returnManagerInfo() throws IOException {
         return managerInfo;
+    }
+
+    @Override
+    public boolean login(String ID, String PW) {
+        if(ID.isEmpty() || PW.isEmpty()){
+            return false;
+        }
+        
+        for (ManagerData manager : managerInfo) {
+            if(manager.getID().equals(ID) && manager.getPW().equals(PW)){
+                return true;
+            }
+        }
+         return false;
+    }
+
+    @Override
+    public void LoginSuccess() {
+        JOptionPane.showMessageDialog(null, "로그인 되었습니다.");
+        ManagerMode click = new ManagerMode();
+        click.setVisible(true);
     }
 }

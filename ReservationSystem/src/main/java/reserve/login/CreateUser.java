@@ -15,19 +15,23 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JOptionPane;
+import reserve.data.BusinessData;
+import reserve.file.JoinBusiness;
 
 /**
  *
  * @author regin
  */
 public class CreateUser extends javax.swing.JFrame {
-    ArrayList<UserData> userInfo = new ArrayList<>();
-    ArrayList<UserData> businessInfo = new ArrayList<>();
+    List<UserData> userInfo;
+    List<BusinessData> businessInfo;
+    
     /**
      * Creates new form CreateID
      */
-    private static int line = 2;
+
     public int count = -1;
     
     public CreateUser() {
@@ -40,6 +44,7 @@ public class CreateUser extends javax.swing.JFrame {
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         
+        // ID, PW 텍스트필드란 내용 업데이트
         J_ID.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -252,7 +257,7 @@ public class CreateUser extends javax.swing.JFrame {
         });
 
         buttonGroup1.add(J_Man);
-        J_Man.setText("남성");
+        J_Man.setText("남자");
         J_Man.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 J_ManActionPerformed(evt);
@@ -260,7 +265,7 @@ public class CreateUser extends javax.swing.JFrame {
         });
 
         buttonGroup1.add(J_Woman);
-        J_Woman.setText("여성");
+        J_Woman.setText("여자");
         J_Woman.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 J_WomanActionPerformed(evt);
@@ -281,7 +286,7 @@ public class CreateUser extends javax.swing.JFrame {
             }
         });
 
-        J_Day.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31" }));
+        J_Day.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31" }));
         J_Day.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 J_DayActionPerformed(evt);
@@ -549,8 +554,8 @@ public class CreateUser extends javax.swing.JFrame {
     }//GEN-LAST:event_J_NoActionPerformed
 
     private void J_UserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_J_UserActionPerformed
-        // TODO add your handling code here:
-        JoinUser userData = new JoinUser();
+        // 사용자 정보 불러오기
+        JoinUser userData = JoinUser.getInstance();
         userData.fRead();
         
         try {
@@ -562,6 +567,8 @@ public class CreateUser extends javax.swing.JFrame {
             ex.printStackTrace();
         }
         
+        // 사용자 정보
+        int index = userData.getIndex();
         String ID = J_ID.getText();
         String PW = J_PW.getText();
         String PWC = J_PWC.getText();
@@ -572,18 +579,24 @@ public class CreateUser extends javax.swing.JFrame {
         String Day = J_Day.getSelectedItem().toString();
         String Birth = Year+"/"+Month+"/"+Day;
         String Gender ="";
-        String Type = "N";
+        String Type = "U";
         
+        // 남자 선택
         if(J_Man.isSelected()){
             Gender = J_Man.getText();
         }
+        
+        // 여자 선택
         else if(J_Woman.isSelected()){
             Gender = J_Woman.getText();
         }
         
-        String input = ID+"|"+PW+"|"+Name+"|"+Birth+"|"+Gender+"|"+Number+"|"+Type+"|"+"\r\n";
+        // 파일에 들어갈 정보
+        String input = ID + "|" + PW + "|" + Name + "|" + Birth + "|" + Gender + "|" + Number + "|" + Type + index + "|" + "\r\n";
         
+       
         try {
+            // 모든 조건이 만족됐을 때
             if(!"".equals(ID) && !"".equals(PW) && !"".equals(Name) && !"".equals(Number)) {
                 if (isPasswordStrong(PW) && isNoStrong(Number) && PW.equals(PWC)){
                     if (count == 0) {
@@ -598,15 +611,19 @@ public class CreateUser extends javax.swing.JFrame {
                         dispose();
                     }
 
+                    //ID 중복 검사 테스트
                     if (count == 1 || count == -1){
                         JOptionPane.showMessageDialog(null, "ID 중복 여부를 확인해주세요.");
                     } 
-                }   
+                } 
+                
+                // 하나의 조건이라도 틀렸을 때
                 else {
                     JOptionPane.showMessageDialog(null, "틀린 것이 없는지 확인해주세요.");                        
                 }
             }
             
+            // 빈 칸이 하나라도 있을 때
             else if(!"".equals(ID) || !"".equals(PW) || !"".equals(Name) || !"".equals(Number) || !"".equals(PWC)
                     || !"* 아이디를 입력해주세요. (영문, 숫자 포함 8~23자)".equals(ID) 
                     || !"* 비밀번호를 입력해주세요. (영문, 숫자, 특수문자 포함 8~15자)".equals(PW)){
@@ -756,49 +773,69 @@ public class CreateUser extends javax.swing.JFrame {
     }//GEN-LAST:event_J_NoKeyReleased
 
     private void J_CheckActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_J_CheckActionPerformed
-        // TODO add your handling code here:
-        
-        JoinUser userData = new JoinUser();
+        // 사용자 정보 불러오기
+        JoinUser userData = JoinUser.getInstance();
         userData.fRead();
+        
+        // 사업자 정보 불러오기
+        JoinBusiness businessData = JoinBusiness.getInstance();
+        businessData.fRead();
         
         try {
             userData.sPlite();
             userInfo = userData.returnUserInfo();
-        } catch (IOException ex) {
+            businessData.sPlite();
+            businessInfo = businessData.returnBusinessInfo();
+        } 
+        
+        catch (IOException ex) {
             //Logger.getLogger(CreateNewId.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
         }
         
+        // 사용자, 사업자 파일 비어있을 때
         String ID = J_ID.getText();
-        if(userInfo.isEmpty()&&isIdStrong(ID)){
+        if(userInfo.isEmpty()&&businessInfo.isEmpty()&&isIdStrong(ID)){
             J_NStrong.setText("사용 가능한 아이디입니다.");
             J_NStrong.setForeground(Color.BLUE);
             count = 0;
         }
+        
+        // 사용자, 사업자 파일 둘 중 하나라도 정보가 있을 때
         else{
             for (int j = 0; j <= userInfo.size(); j++) {
-                if(isIdStrong(ID)){
-                    if (userInfo.get(j).getID().equals(ID)) {
-                        J_ID.setText("");
-                        J_NStrong.setText("이미 존재하는 아이디입니다.");
+                for(int b = 0; b <= businessInfo.size(); b++){
+                    if(isIdStrong(ID)){
+                        if (userInfo.get(j).getID().equals(ID)) {
+                            J_ID.setText("");
+                            J_NStrong.setText("이미 존재하는 아이디입니다.");
+                            J_NStrong.setForeground(Color.RED);
+                            count = 1;
+                            break;
+                        }
+
+                        if (businessInfo.get(b).getID().equals(ID)) {
+                            J_ID.setText("");
+                            J_NStrong.setText("이미 존재하는 아이디입니다.");
+                            J_NStrong.setForeground(Color.RED);
+                            count = 1;
+                            break;
+                        }
+                        
+                        else{
+                            J_NStrong.setText("사용 가능한 아이디입니다.");
+                            J_NStrong.setForeground(Color.BLUE);
+                            count = 0;
+                        }
+                    }
+                
+                    else{
+                        J_NStrong.setText("ID 형식을 확인해주세요.");
                         J_NStrong.setForeground(Color.RED);
+                        J_ID.setText("* 아이디를 입력해주세요. (영문, 숫자 포함 8~23자)");
                         count = 1;
                         break;
                     }
-
-                    else{
-                        J_NStrong.setText("사용 가능한 아이디입니다.");
-                        J_NStrong.setForeground(Color.BLUE);
-                        count = 0;
-                    }
-                }
-                
-                else{
-                    J_NStrong.setText("ID 형식을 확인해주세요.");
-                    J_NStrong.setForeground(Color.RED);
-                    J_ID.setText("* 아이디를 입력해주세요. (영문, 숫자 포함 8~23자)");
-                    count = 1;
-                    break;
                 }
             }
         }
@@ -812,21 +849,24 @@ public class CreateUser extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_J_PWCActionPerformed
     
+    // 전화번호 조건 (숫자 11자)
     private boolean isNoStrong(String id){
         String regex = "^\\d{11}$";
         return id.matches(regex);
     }
     
-    private boolean isPasswordStrong(String password){
-        String regex = "^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*()-+=_.]).{8,15}$";
-        return password.matches(regex);
-    }
-    
+    // 아이디 조건 (영문, 숫자 포함 8~23자)
     private boolean isIdStrong(String id){
         String regex = "^(?=.*[a-zA-Z])(?=.*[0-9]).{8,23}$";
         return id.matches(regex);
     }
     
+    // 비밀번호 조건 (영문, 숫자, 특수문자 포함 8~15자)
+    private boolean isPasswordStrong(String password){
+        String regex = "^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*()-+=_.]).{8,15}$";
+        return password.matches(regex);
+    }
+    // 비밀번호 재입력 확인
     private void checkPasswordMatch() {
         String password = J_PW.getText();
         String confirmPassword = J_PWC.getText();

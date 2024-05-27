@@ -18,7 +18,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class JavaNaver {
+public class Map {
 
     private static int zoomLevel = 16;
     private static JLabel label;
@@ -194,10 +194,10 @@ public class JavaNaver {
         JPanel currentPanel = new JPanel();
         currentPanel.setLayout(null);
         currentPanel.setBounds(0, 0, 700, 800);
-        for (Component component : JavaNaver.layeredPane.getComponents()) {
+        for (Component component : Map.layeredPane.getComponents()) {
             currentPanel.add(component);
         }
-        JavaNaver.pageStack.push(currentPanel); // Push current page to stack
+        Map.pageStack.push(currentPanel); // Push current page to stack
 
         JPanel reservationPanel = new JPanel();
         reservationPanel.setLayout(new BoxLayout(reservationPanel, BoxLayout.Y_AXIS));
@@ -210,8 +210,8 @@ public class JavaNaver {
         // Add the back button to the top left corner
         JButton backButton = new JButton("뒤로");
         backButton.setBounds(10, 10, 80, 30);
-        backButton.addActionListener(e -> JavaNaver.goBack());
-        JavaNaver.layeredPane.add(backButton, JLayeredPane.PALETTE_LAYER);
+        backButton.addActionListener(e -> Map.goBack());
+        Map.layeredPane.add(backButton, JLayeredPane.PALETTE_LAYER);
 
         JLabel reservationLabel = new JLabel("예약 내역");
         reservationLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -236,9 +236,9 @@ public class JavaNaver {
             e.printStackTrace();
         }
 
-        JavaNaver.layeredPane.add(scrollPane, JLayeredPane.PALETTE_LAYER);
-        JavaNaver.layeredPane.revalidate();
-        JavaNaver.layeredPane.repaint();
+        Map.layeredPane.add(scrollPane, JLayeredPane.PALETTE_LAYER);
+        Map.layeredPane.revalidate();
+        Map.layeredPane.repaint();
     }
 
     private static void addReservationEntry(JPanel reservationPanel, String details) {
@@ -270,8 +270,7 @@ public class JavaNaver {
     }
 
     private static void confirmCancelReservation() {
-        int response = JOptionPane.showConfirmDialog(
-                JavaNaver.layeredPane,
+        int response = JOptionPane.showConfirmDialog(Map.layeredPane,
                 "정말 취소하시겠습니까?",
                 "예약 취소 확인",
                 JOptionPane.YES_NO_OPTION
@@ -283,8 +282,8 @@ public class JavaNaver {
     }
 
     private static void cancelReservation() {
-        JOptionPane.showMessageDialog(JavaNaver.layeredPane, "예약이 취소되었습니다.");
-        JavaNaver.goBack();
+        JOptionPane.showMessageDialog(Map.layeredPane, "예약이 취소되었습니다.");
+        Map.goBack();
     }
 
     private static void completeReservation() {
@@ -322,7 +321,7 @@ public class JavaNaver {
             String selectedRating = starGroup.getSelection().getActionCommand();
             JOptionPane.showMessageDialog(ratingDialog, "별점 " + selectedRating + "점을 주셨습니다.");
             ratingDialog.dispose();
-            JavaNaver.goBack();
+            Map.goBack();
         });
         ratingPanel.add(submitButton);
 
@@ -336,7 +335,7 @@ public class JavaNaver {
 class HotelBookingPopup {
     public static void openHotelBookingPage() {
         // Hide zoom buttons
-        JavaNaver.setZoomButtonsVisible(false);
+        Map.setZoomButtonsVisible(false);
 
         JPanel formPanel = new JPanel();
         formPanel.setLayout(null); // Use null layout for absolute positioning
@@ -453,7 +452,7 @@ class HotelBookingPopup {
         JButton bookingCompleteButton = new JButton("예약 완료");
         bookingCompleteButton.setBounds(280, 460, 120, 30); // Adjusted position to be below the hotel content
         bookingCompleteButton.addActionListener(e -> {
-            String reservationNumber = JavaNaver.generateReservationNumber(); // Generate reservation number
+            String reservationNumber = Map.generateReservationNumber(); // Generate reservation number
             saveReservationDetails(formPanel, reservationNumber);
 
             // Show confirmation dialog
@@ -468,7 +467,7 @@ class HotelBookingPopup {
                     "확인"
             );
             if (response == JOptionPane.OK_OPTION) {
-                JavaNaver.goBack(); // Go back to the previous page
+                Map.goBack(); // Go back to the previous page
             }
         });
         formPanel.add(bookingCompleteButton);
@@ -510,16 +509,16 @@ class HotelBookingPopup {
         // Back Button
         JButton backButton = new JButton("Back");
         backButton.setBounds(20, 20, 80, 30); // Position the back button at the top left corner
-        backButton.addActionListener(e -> JavaNaver.goBack());
+        backButton.addActionListener(e -> Map.goBack());
         formPanel.add(backButton);
 
         JScrollPane scrollPane = new JScrollPane(formPanel);
         scrollPane.setBounds(0, 0, 700, 800);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
-        JavaNaver.layeredPane.add(scrollPane, JLayeredPane.PALETTE_LAYER);
-        JavaNaver.layeredPane.revalidate();
-        JavaNaver.layeredPane.repaint();
+        Map.layeredPane.add(scrollPane, JLayeredPane.PALETTE_LAYER);
+        Map.layeredPane.revalidate();
+        Map.layeredPane.repaint();
     }
 
     private static void adjustFormPositions(JPanel formPanel, boolean airlineVisible, boolean rentalCarVisible, JPanel airlineFormPanel, JPanel rentalCarFormPanel, JButton bookingCompleteButton, JCheckBox rentalCarBookingCheckbox) {

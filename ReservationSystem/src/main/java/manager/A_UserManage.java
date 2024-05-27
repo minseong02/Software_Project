@@ -43,7 +43,7 @@ public class A_UserManage extends javax.swing.JFrame {
                 String[] dataRow = temp.split("\\|");
                 
                 String[] input = new String[4];
-                input[0] = dataRow[0];
+                input[0] = dataRow[6];
                 input[1] = dataRow[2];
                 input[2] = dataRow[3];
                 input[3] = dataRow[5];
