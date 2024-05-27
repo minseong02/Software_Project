@@ -4,13 +4,20 @@
  */
 package reserve.file;
 
+import buisness_package.Business_Choice;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JOptionPane;
 import reserve.data.BusinessData;
 
 /**
@@ -21,21 +28,38 @@ import reserve.data.BusinessData;
 public class JoinBusiness implements CreateInterface {
     
 ArrayList<String> readInfo = new ArrayList<>();
-ArrayList<BusinessData> businessInfo = new ArrayList<>();
+private List<BusinessData> businessInfo;
+private static JoinBusiness instance;
+
+public JoinBusiness(List<BusinessData> businessInfo){
+    this.businessInfo = businessInfo;
+}
+
+private JoinBusiness(){
+    businessInfo = new ArrayList<>();
+}
+
+public static JoinBusiness getInstance(){
+    if(instance == null){
+        instance = new JoinBusiness();
+    }
+    return instance;
+}
 
 private String line;
 private String BusinessFile = "File/BusinessInfo.txt";
+private int index = 0;
 
     @Override
     public void fRead() {
-        try {
-            BufferedReader fileread = new BufferedReader(new FileReader(BusinessFile));
-                while ((line = fileread.readLine())!=null ){
-                    readInfo.add(line);
-                }
-                fileread.close();
+        index = 1;
+        try(BufferedReader fileread = new BufferedReader(new InputStreamReader(new FileInputStream(BusinessFile), "UTF-8"))) {
+            while ((line = fileread.readLine())!=null ){
+                readInfo.add(line);
+                index++;
+            }
         }
-        
+
         catch(FileNotFoundException a) { 
             a.printStackTrace(); 
             System.out.println("파일이 존재하지않습니다. 경로를 확인해주세요. ");   
@@ -46,9 +70,13 @@ private String BusinessFile = "File/BusinessInfo.txt";
         }
     }
     
+    public int getIndex(){
+        return index;
+    }
+    
     @Override
     public void fWrite(String a) throws IOException {
-        BufferedWriter bw = new BufferedWriter(new FileWriter(BusinessFile,true));
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(BusinessFile, true), "UTF-8"));
         bw.write(a); 
         bw.flush(); 
         bw.close();
@@ -57,7 +85,6 @@ private String BusinessFile = "File/BusinessInfo.txt";
     @Override
     public void sPlite() {
         String line;
-        System.out.println(readInfo.size());
         for(int i = 0 ; i <readInfo.size(); i ++){
             line  = readInfo.get(i);
             String[] str = line.split("\\|"); 
@@ -65,7 +92,28 @@ private String BusinessFile = "File/BusinessInfo.txt";
         }
     }
     
-    public ArrayList<BusinessData> returnBusinessInfo() throws IOException {
+    public List<BusinessData> returnBusinessInfo() throws IOException {
         return businessInfo;
+    }
+
+    @Override
+    public boolean login(String ID, String PW) {
+        if(ID.isEmpty() || PW.isEmpty()){
+            return false;
+        }
+        
+        for (BusinessData business : businessInfo) {
+            if(business.getID().equals(ID) && business.getPW().equals(PW)){
+                return true;
+            }
+        }
+         return false;
+    }
+
+    @Override
+    public void LoginSuccess() {
+        JOptionPane.showMessageDialog(null, "로그인 되었습니다.");
+        Business_Choice click = new Business_Choice();
+        click.setVisible(true);
     }
 }

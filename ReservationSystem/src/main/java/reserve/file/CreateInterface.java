@@ -14,4 +14,6 @@ public interface CreateInterface {
     void fRead();
     void fWrite(String input)throws IOException;
     void sPlite();
+    boolean login(String ID, String PW);
+    void LoginSuccess();
 }

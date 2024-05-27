@@ -12,6 +12,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -21,19 +22,21 @@ import javax.swing.SwingConstants;
 import reserve.data.BusinessData;
 import reserve.data.ManagerData;
 import reserve.data.UserData;
+import reserve.file.CreateInterface;
 import reserve.file.JoinBusiness;
 import reserve.file.JoinManager;
 import reserve.file.JoinUser;
+import reserve.file.LoginContext;
+import reserve.file.LoginType;
 //import reserve.business.Business_Choice;
-
 /**
  *
  * @author regin
  */
 public class Login extends javax.swing.JFrame {
-    ArrayList<BusinessData> businessInfo = new ArrayList<>();
-    ArrayList<UserData> userInfo = new ArrayList<>();
-    ArrayList<ManagerData> managerInfo = new ArrayList<>();
+    List<BusinessData> businessInfo = new ArrayList<>();
+    List<UserData> userInfo = new ArrayList<>();
+    List<ManagerData> managerInfo = new ArrayList<>();
    
     /**
      * Creates new form NewJFrame
@@ -45,11 +48,7 @@ public class Login extends javax.swing.JFrame {
         setSize(700, 800);
         setResizable(false);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        
-        
-        
-        
+        setDefaultCloseOperation(EXIT_ON_CLOSE);  
     }
 
     /**
@@ -73,7 +72,7 @@ public class Login extends javax.swing.JFrame {
 
         F_ID.setToolTipText("아이디");
         F_ID.setActionCommand("<Not Set>");
-        F_ID.setCursor(new java.awt.Cursor(java.awt.Cursor.TEXT_CURSOR));
+        F_ID.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         F_ID.setName(""); // NOI18N
         F_ID.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -102,6 +101,8 @@ public class Login extends javax.swing.JFrame {
         jLabel2.setText("아이디");
 
         jLabel4.setText("비밀번호");
+
+        F_PW.setToolTipText("비밀번호");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -170,13 +171,13 @@ public class Login extends javax.swing.JFrame {
     
     private void J_LoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_J_LoginActionPerformed
         // TODO add your handling code here:
-        JoinBusiness businessData = new JoinBusiness();
+        JoinBusiness businessData = JoinBusiness.getInstance();
         businessData.fRead();
         
-        JoinUser userData = new JoinUser();
+        JoinUser userData = JoinUser.getInstance();
         userData.fRead();
         
-        JoinManager managerData = new JoinManager();
+        JoinManager managerData = JoinManager.getInstance();
         managerData.fRead();
         
         try {
@@ -209,45 +210,28 @@ public class Login extends javax.swing.JFrame {
         String ID = F_ID.getText();
         String PW = F_PW.getText();
         
-        for (int j = 0; j <= userInfo.size(); j++) {
-            for(int i = 0; i <= businessInfo.size(); i++){
-                for(int k = 0; k <= managerInfo.size(); k++){
-                    
-
-                    if (businessInfo.get(i).getID().equals(ID) && businessInfo.get(i).getPW().equals(PW)) {
-                        JOptionPane.showMessageDialog(null, "로그인 되었습니다.");
-                        Business_Choice click = new Business_Choice();
-                        click.setVisible(true);                
-                        dispose();
-                        break;
-                    }
-
-                    if(userInfo.get(j).getID().equals(ID) && userInfo.get(j).getPW().equals(PW)){
-                        JOptionPane.showMessageDialog(null, "로그인 되었습니다.");
-                        JFrame frame = new JFrame();
-                        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                        frame.setSize(700, 800);
-                        frame.setLocationRelativeTo(null);
-                        JavaNaver.openReservationSystem(frame);
-                        frame.setVisible(true);
-                        dispose();
-                        break;
-                    }
-                    
-                    if (managerInfo.get(i).getID().equals(ID) && managerInfo.get(i).getPW().equals(PW)) {
-                        JOptionPane.showMessageDialog(null, "로그인 되었습니다.");
-                        ManagerMode click = new ManagerMode();
-                        click.setVisible(true);                
-                        dispose();
-                        break;
-                    }
-
-                    else{
-                        JOptionPane.showMessageDialog(null, "로그인 정보가 일치하지 않습니다.");
-                        break;
-                    }
-                }
-            }
+        CreateInterface user = new JoinUser(userInfo);
+        CreateInterface manager = new JoinManager(managerInfo);
+        CreateInterface business = new JoinBusiness(businessInfo);
+        
+        List<CreateInterface> strategies = new ArrayList<>();
+        strategies.add(user);
+        strategies.add(manager);
+        strategies.add(business);
+        
+        CreateInterface type = new LoginType(strategies);
+        
+        LoginContext context = new LoginContext();
+        context.setLoginStrategy(type);
+        
+        boolean isLoggedIn = context.executeStrategy(ID, PW);
+        
+        if(isLoggedIn){
+            dispose();
+        }
+        
+        else if(!isLoggedIn){
+            JOptionPane.showMessageDialog(null, "아이디와 비밀번호를 확인해주세요.");
         }
     }//GEN-LAST:event_J_LoginActionPerformed
 

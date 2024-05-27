@@ -9,25 +9,33 @@ import reserve.data.BusinessData;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.io.BufferedReader;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.io.BufferedWriter;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JOptionPane;
+import reserve.data.UserData;
+import reserve.file.JoinUser;
 
 /**
  *
  * @author regin
  */
 public class CreateBusiness extends javax.swing.JFrame {
-    ArrayList<BusinessData> businessInfo = new ArrayList<>();
+    List<BusinessData> businessInfo;
+    List<UserData> userInfo;
+    
     /**
      * Creates new form CreateID
      */
+    
     public int count = -1;
-    private static int line = 1;
     
     public CreateBusiness() {
         
@@ -39,6 +47,7 @@ public class CreateBusiness extends javax.swing.JFrame {
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         
+        // ID, PW 텍스트필드란 내용 업데이트
         J_ID.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -477,8 +486,8 @@ public class CreateBusiness extends javax.swing.JFrame {
     }//GEN-LAST:event_J_NoActionPerformed
 
     private void J_UserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_J_UserActionPerformed
-        // TODO add your handling code here:
-        JoinBusiness businessData = new JoinBusiness();
+        // 사업자 정보 불러오기
+        JoinBusiness businessData = JoinBusiness.getInstance();
         businessData.fRead();
         
         try {
@@ -490,7 +499,8 @@ public class CreateBusiness extends javax.swing.JFrame {
             ex.printStackTrace();
         }
         
-        
+        // 사업자 정보
+        int index = businessData.getIndex();
         String ID = J_ID.getText();
         String PW = J_PW.getText();
         String PWC = J_PWC.getText();
@@ -499,9 +509,12 @@ public class CreateBusiness extends javax.swing.JFrame {
         String Bno = J_Bno.getText();
         String TM = J_TM.getText();
         String Type = "B";
-        String input = ID + "|" + PW + "|" + Name + "|" + TM + "|" + Bno + "|" + Number + "|" + Type + "|" + "\r\n";
+        
+        // 파일에 들어갈 정보
+        String input = ID + "|" + PW + "|" + Name + "|" + TM + "|" + Bno + "|" + Number + "|" + Type + index + "|" + "\r\n";
         
         try {
+            // 모든 조건이 만족됐을 때
             if(!"".equals(ID) && !"".equals(PW) && !"".equals(Name) && !"".equals(Bno) && !"".equals(Number)) {
                 if (isPasswordStrong(PW) && isNoStrong(Number) && PW.equals(PWC) && isBnoStrong(Bno)){
                     if (count == 0) {
@@ -513,21 +526,24 @@ public class CreateBusiness extends javax.swing.JFrame {
                         J_TM.setText("");
                         J_Bno.setText("");
                         J_No.setText("");
-                        line ++;
                         Login back = new Login();
                         back.setVisible(true);
                         dispose();
                     }
-
+                    
+                    //ID 중복 검사 테스트
                     if (count == 1 || count == -1){
                         JOptionPane.showMessageDialog(null, "ID 중복 여부를 확인해주세요.");
                     } 
                 }   
+                
+                // 하나의 조건이라도 틀렸을 때
                 else{
                     JOptionPane.showMessageDialog(null, "틀린 것이 없는지 확인해주세요.");
                 }
             }
             
+            // 빈 칸이 하나라도 있을 때
             else if(!"".equals(ID) || !"".equals(PW) || !"".equals(Name) || !"".equals(Bno) || !"".equals(Number)
                     || !"* 아이디를 입력해주세요. (영문, 숫자 포함 8~23자)".equals(ID) 
                     || "* 비밀번호를 입력해주세요. (영문, 숫자, 특수문자 포함 8~15자)".equals(PW)){
@@ -670,51 +686,69 @@ public class CreateBusiness extends javax.swing.JFrame {
     }//GEN-LAST:event_J_NoKeyReleased
 
     private void J_CheckActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_J_CheckActionPerformed
-        // TODO add your handling code here:
+        // 사용자 정보 불러오기
+        JoinUser userData = JoinUser.getInstance();
+        userData.fRead();
         
-        JoinBusiness businessData = new JoinBusiness();
+        // 사업자 정보 불러오기
+        JoinBusiness businessData = JoinBusiness.getInstance();
         businessData.fRead();
         
         try {
+            userData.sPlite();
+            userInfo = userData.returnUserInfo();
             businessData.sPlite();
             businessInfo = businessData.returnBusinessInfo();
         } 
+        
         catch (IOException ex) {
             //Logger.getLogger(CreateNewId.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
         }
         
+        // 사용자, 사업자 파일 비어있을 때
         String ID = J_ID.getText();
-        if(businessInfo.isEmpty() && isIdStrong(ID)){
+        if(userInfo.isEmpty()&&businessInfo.isEmpty()&&isIdStrong(ID)){
             J_NStrong.setText("사용 가능한 아이디입니다.");
             J_NStrong.setForeground(Color.BLUE);
             count = 0;
         }
         
+        // 사용자, 사업자 파일 둘 중 하나라도 정보가 있을 때
         else{
-            for (int j = 0; j <= businessInfo.size(); j++) {
-                if(isIdStrong(ID)){
-                    if (businessInfo.get(j).getID().equals(ID)) {
-                        J_ID.setText("");
-                        J_NStrong.setText("이미 존재하는 아이디입니다.");
+            for (int j = 0; j <= userInfo.size(); j++) {
+                for(int b = 0; b <= businessInfo.size(); b++){
+                    if(isIdStrong(ID)){
+                        if (userInfo.get(j).getID().equals(ID)) {
+                            J_ID.setText("");
+                            J_NStrong.setText("이미 존재하는 아이디입니다.");
+                            J_NStrong.setForeground(Color.RED);
+                            count = 1;
+                            break;
+                        }
+
+                        if (businessInfo.get(b).getID().equals(ID)) {
+                            J_ID.setText("");
+                            J_NStrong.setText("이미 존재하는 아이디입니다.");
+                            J_NStrong.setForeground(Color.RED);
+                            count = 1;
+                            break;
+                        }
+                        
+                        else{
+                            J_NStrong.setText("사용 가능한 아이디입니다.");
+                            J_NStrong.setForeground(Color.BLUE);
+                            count = 0;
+                        }
+                    }
+                    
+                    else{
+                        J_NStrong.setText("ID 형식을 확인해주세요.");
                         J_NStrong.setForeground(Color.RED);
+                        J_ID.setText("* 아이디를 입력해주세요. (영문, 숫자 포함 8~23자)");
                         count = 1;
                         break;
                     }
-
-                    else{
-                        J_NStrong.setText("사용 가능한 아이디입니다.");
-                        J_NStrong.setForeground(Color.BLUE);
-                        count = 0;
-                    }
-                }
-                
-                else{
-                    J_NStrong.setText("ID 형식을 확인해주세요.");
-                    J_NStrong.setForeground(Color.RED);
-                    J_ID.setText("* 아이디를 입력해주세요. (영문, 숫자 포함 8~23자)");
-                    count = 1;
-                    break;
                 }
             }
         }
@@ -758,26 +792,31 @@ public class CreateBusiness extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_J_BnoKeyReleased
     
+    // 전화번호 조건 (숫자 11자)
     private boolean isNoStrong(String id){
         String regex = "^\\d{11}$";
         return id.matches(regex);
     }
     
-    private boolean isPasswordStrong(String password){
-        String regex = "^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*()-+=_.]).{8,15}$";
-        return password.matches(regex);
-    }
-    
+    // 아이디 조건 (영문, 숫자 포함 8~23자)
     private boolean isIdStrong(String id){
         String regex = "^(?=.*[a-zA-Z])(?=.*[0-9]).{8,23}$";
         return id.matches(regex);
     }
     
+    // 비밀번호 조건 (영문, 숫자, 특수문자 포함 8~15자)
+    private boolean isPasswordStrong(String password){
+        String regex = "^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*()-+=_.]).{8,15}$";
+        return password.matches(regex);
+    }
+    
+    // 사업자번호 조건 (숫자 10자)
     private boolean isBnoStrong(String Bno){
         String regex = "^\\d{10}$";
         return Bno.matches(regex);
     }
     
+    // 비밀번호 재입력 확인
     private void checkPasswordMatch() {
         String password = J_PW.getText();
         String confirmPassword = J_PWC.getText();
