@@ -14,70 +14,70 @@ import javax.swing.JTextField;
  */
 public class CarBS_information {
     
-    private JTextField car_company;
-    private JComboBox <String> rental_time_combo;
-    private JTextField car_cost;
-    private JComboBox<String> vehicle_type_combo;
-    private JRadioButton gasoline;
-    private JRadioButton diesel;
-    private JRadioButton electricity;
-    private JRadioButton yes;
-    private JRadioButton no;
-    private JTextField car_register;
+    private String car_company;
+    private String rental_time;
+    private String car_cost;
+    private String vehicle_type;
+    private String gasoline;
+    private String diesel;
+    private String electricity;
+    private String yes;
+    private String no;
+    private String car_register;
     
     
-    public CarBS_information(String[] rental_time, String[]vehicle_type){
-        car_company = new JTextField();
-        rental_time_combo = new JComboBox<String>(rental_time);
-        car_cost = new JTextField();
-        vehicle_type_combo =new JComboBox<String>(vehicle_type);
-        gasoline = new JRadioButton("휘발유");
-        diesel = new JRadioButton("경유");
-        electricity = new JRadioButton("전기");
-        yes = new JRadioButton("O");
-        no = new JRadioButton("X");
-        car_register = new JTextField();
+    public CarBS_information(String car_company,String rental_time,String car_cost,String vehicle_type,String gasoline,String diesel,String electricity,String yes,String no,String car_register){
+       this.car_company = car_company;
+       this.rental_time = rental_time;
+       this.car_cost = car_cost;
+       this.vehicle_type = vehicle_type;
+       this.gasoline = gasoline;
+       this.diesel = diesel;
+       this.electricity = electricity;
+       this.yes = yes;
+       this.no = no;
+       this.car_register = car_register;
     }
     
     // getter 메서드
     
-    public JTextField getCarCompany(){
+    public String getCarCompany(){
         return car_company;
     }
     
-    public JComboBox <String> getRentalTime(){
-        return rental_time_combo;
+    public String getRentalTime(){
+        return rental_time;
     }
     
-    public JTextField getCarCost(){
+    public String getCarCost(){
         return car_cost;
     }
     
-    public JComboBox<String> getVehicleType(){
-        return vehicle_type_combo;
+    public String getVehicleType(){
+        return vehicle_type;
     }
     
-    public JRadioButton getGasoline(){
+    public String getGasoline(){
         return gasoline;
     }
     
-    public JRadioButton getDiesel(){
+    public String getDiesel(){
         return gasoline;
     }
     
-    public JRadioButton getElectricity(){
+    public String getElectricity(){
         return electricity;
     }
     
-    public JRadioButton getYes(){
+    public String getYes(){
         return yes;
     }
     
-    public JRadioButton getNo(){
+    public String getNo(){
         return no;
     }
     
-    public JTextField getCarRegister(){
+    public String getCarRegister(){
         return  car_register;
     }
     
@@ -85,23 +85,23 @@ public class CarBS_information {
     
     // setter 메서드
     
-    public void setCarCompany(JTextField car_company){
+    public void setCarCompany(String car_company){
         this.car_company = car_company;
     }
     
-    public void setRentalTime(JComboBox <String> rental_time_combo){
-        this.rental_time_combo = rental_time_combo;
+    public void setRentalTime(String rental_time_combo){
+        this.rental_time = rental_time;
     }
     
-    public void setCarCost(JTextField car_cost){
+    public void setCarCost(String car_cost){
         this.car_cost = car_cost;
     }
     
-    public void setVehicleType(JComboBox<String> vehicle_type_combo){
-        this.vehicle_type_combo = vehicle_type_combo;
+    public void setVehicleType(String vehicle_type){
+        this.vehicle_type = vehicle_type;
     }
     
-    public void setOil(JRadioButton oil){
+    public void setOil(String oil){
         if(oil.equals(gasoline)){
             this.gasoline=oil;
         }
@@ -113,7 +113,7 @@ public class CarBS_information {
         }
     }
     
-    public void setHighPass(JRadioButton highpass){
+    public void setHighPass(String highpass){
         if(highpass.equals(yes)){
             this.yes = highpass;
         }
@@ -122,7 +122,7 @@ public class CarBS_information {
         }
     }
     
-    public void setCarRegister(JTextField car_register){
+    public void setCarRegister(String car_register){
         this.car_register = car_register;
     }
         
