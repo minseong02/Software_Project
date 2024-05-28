@@ -98,8 +98,7 @@ public class CarBS extends JPanel {
         
         file = "car_business_textfile.txt";
         
-       
-        
+              
         rentalcar_list();
     }
     
