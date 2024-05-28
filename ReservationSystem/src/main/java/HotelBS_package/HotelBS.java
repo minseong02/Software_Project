@@ -90,7 +90,7 @@ public class HotelBS extends JPanel{
         hotel_register = new JTextField(2);
         
         
-        file = "hotel_buisness_textfile.txt";
+        file = "hotel_business_textfile.txt";
         search_combo = new JComboBox();
         
         search_text = new JTextField();

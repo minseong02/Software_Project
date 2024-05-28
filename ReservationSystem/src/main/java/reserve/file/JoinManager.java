@@ -97,10 +97,12 @@ private String ManagerFile = "File/ManagerInfo.txt";
          return false;
     }
 
+    private String panelName;
+    
     @Override
     public void LoginSuccess() {
         JOptionPane.showMessageDialog(null, "로그인 되었습니다.");
-        ManagerMode click = new ManagerMode();
+        ManagerMode click = new ManagerMode(panelName);      
         click.setVisible(true);
     }
 }
