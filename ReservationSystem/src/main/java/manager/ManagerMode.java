@@ -78,7 +78,7 @@ public class ManagerMode extends JFrame implements ActionListener {
             resetButtonPanel();
         }
         else if("회원 관리".equals(actionCommand)) {
-        A_MemberManage AU = new A_MemberManage();
+        A_Memberdisplay AU = new A_Memberdisplay();
         AU.setVisible(true);
         setVisible(false);
         dispose();
