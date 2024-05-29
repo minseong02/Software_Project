@@ -4,11 +4,10 @@
  */
 package manager;
 
-import java.util.List;
 /**
  *
  * @author PARKSOHYUN
  */
 public interface Updatetablemodel {
-    void updateData(List<String[]> data);
+    void updateData(ProductIterator iterator);
 }

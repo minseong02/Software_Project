@@ -22,6 +22,7 @@ import java.util.Map;
  */
 
 public class ProductTablePanel extends JPanel implements Updatetablemodel  {
+	
     private JTable productTable;
     private DefaultTableModel model;
     private String[] columns;
@@ -37,9 +38,8 @@ public class ProductTablePanel extends JPanel implements Updatetablemodel  {
     private String delimiter;
     private ProductTablePanel productTablePanel;
     
-    private Map<String, Integer> registrationColumnIndexMap = new HashMap<>();
-    private Map<String, JTable> tableMap = new HashMap<>();
-    private Map<String, List<String[]>> previousData = new HashMap<>();
+    private final Map<String, Integer> registrationColumnIndexMap = new HashMap<>();
+    private final Map<String, JTable> tableMap = new HashMap<>();
     
     
     public ProductTablePanel(String[] columns, ProductData productData) {
@@ -102,10 +102,11 @@ public class ProductTablePanel extends JPanel implements Updatetablemodel  {
 
 
     private ProductTablePanel createAndLoadPanel(String panelName, String[] columns, ProductData productData, String filePath) {
+        
         ProductTablePanel panel = new ProductTablePanel(columns, productData);
         panel.setName(panelName);
         productData.loadDataFromTextFile(filePath, "|");
-        panel.updateData(productData.getDataRows());
+        panel.updateData(productData.iterator());
         cardPanel.add(panel, panelName);
         tableMap.put(panelName, panel.productTable);
         return panel;
@@ -168,28 +169,6 @@ public class ProductTablePanel extends JPanel implements Updatetablemodel  {
         return null;
     }
 
-    public void registerProduct(String panelName) {
-
-        Command registerCommand = new RegisterCommand(this, filename, delimiter);
-        CommandInvokerWithUndo commandInvoker = new CommandInvokerWithUndo();
-        commandInvoker.setCommand(registerCommand);
-        commandInvoker.executeCommand();
-        
-    }
-
-    public void deleteSelected(String panelName) {
-        JTable targetTable = tableMap.get(panelName);
-        if (targetTable != null) {
-            int selectedRow = targetTable.getSelectedRow();
-            if (selectedRow != -1) {
-                Command deleteCommand = new DeleteCommand((DefaultTableModel) targetTable.getModel(), selectedRow, productData, productTablePanel);
-                CommandInvokerWithUndo commandInvoker = new CommandInvokerWithUndo();
-                commandInvoker.setCommand(deleteCommand);
-                commandInvoker.executeCommand();
-            }
-        }
-    }
-
     public List<String[]> getDataForPanel(String panelName) {
         JTable targetTable = tableMap.get(panelName);
         List<String[]> data = new ArrayList<>();
@@ -207,25 +186,13 @@ public class ProductTablePanel extends JPanel implements Updatetablemodel  {
         return data;
     }
    
-    public void savePreviousData(String panelName) {
-        List<String[]> data = getDataForPanel(panelName);
-        previousData.put(panelName, new ArrayList<>(data));
-    }
-
-    public void restorePreviousData(String panelName) {
-        List<String[]> data = previousData.get(panelName);
-        if (data != null) {
-            updateData(data);
-        }
-    }
-    
     
     @Override 
-    public void updateData(List<String[]> data) {
-        model.setRowCount(0);
-        
-        for(String[] rowData : data) {
-            model.addRow(rowData);
+    public void updateData(ProductIterator iterator) {       
+        model.setRowCount(0); // 기존 데이터 모두 삭제
+        // 반복자를 사용하여 데이터 행을 추가함
+        while(iterator.hasNext()) {
+            model.addRow(iterator.next()); 
         }
     }
 }
