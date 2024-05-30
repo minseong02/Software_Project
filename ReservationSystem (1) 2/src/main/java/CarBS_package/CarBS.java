@@ -34,6 +34,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
+import reserve.login.Login;
 
 /**
  *
@@ -267,7 +268,7 @@ public class CarBS extends JPanel {
         JButton addBT = new JButton("추가");
         JButton deleteBT = new JButton("삭제");
         JButton okBT = new JButton("확인");
-        JButton undoBT = new JButton("복구");
+
         
         south_panel.add(backBT);
         south_panel.add(modifyBT);
@@ -278,6 +279,15 @@ public class CarBS extends JPanel {
         
         south_panel.setBounds(150,690,400,50);
         add(south_panel);
+        
+        backBT.addActionListener(new ActionListener(){ // 추가 버튼 눌렀을 때
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                back(car_table);
+            }
+            
+        });
+        
         
         addBT.addActionListener(new ActionListener(){ // 추가 버튼 눌렀을 때
             @Override
@@ -323,6 +333,20 @@ public class CarBS extends JPanel {
         
         
         
+    }
+    
+    private void back(JTable hotel_table){
+        
+        
+        // 현재 패널이 포함된 프레임 찾기 및 닫기
+        JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        if (topFrame != null) {
+            topFrame.dispose();
+        }
+
+        Login click = new Login();
+        click.setVisible(true);
+
     }
     
 

@@ -4,17 +4,17 @@
  */
 
 package HotelBS_package;
-//import buisness_package.Button;
-//import buisness_package.OKButton;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FileDialog;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -24,6 +24,7 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
+import reserve.login.Login;
 
 
 /**
@@ -53,6 +54,7 @@ public class HotelBS extends JPanel{
     private String search_combo_text;
     private JTextField search_text;
     private String text;
+    private JLabel file_name_label;
     
     
     
@@ -91,9 +93,7 @@ public class HotelBS extends JPanel{
         
         
         file = "hotel_business_textfile.txt";
-        search_combo = new JComboBox();
-        
-        search_text = new JTextField();
+       
 
         
        hotelInfo = new HotelBS_information(
@@ -108,6 +108,10 @@ public class HotelBS extends JPanel{
                 standard_room.isSelected() ? "스탠다드룸" : "",
         hotel_cost.getText(),
      hotel_register.getText());
+       
+        search_combo = new JComboBox();
+        
+        search_text = new JTextField();
        
 
         
@@ -214,8 +218,15 @@ public class HotelBS extends JPanel{
         
         // 폴더에서 사진 선택
         input_panel.add(new JLabel("호텔 대표 사진"));
-        JButton btnOpen = new JButton("사진 등록");
-        input_panel.add(btnOpen);
+        JPanel photoPanel = new JPanel();
+        photoPanel.setLayout(new GridLayout(3,1));
+        JButton btnOpen = new JButton("사진 열기");
+        file_name_label= new JLabel();
+        JButton btnSave = new JButton("사진 저장");
+        photoPanel.add(btnOpen);
+        photoPanel.add(file_name_label);
+        photoPanel.add(btnSave);
+        input_panel.add(photoPanel);
         
         btnOpen.addActionListener(new ActionListener() {
             @Override
@@ -223,8 +234,41 @@ public class HotelBS extends JPanel{
                 FileDialog file_open = new FileDialog((JFrame) SwingUtilities.getWindowAncestor(HotelBS.this), "사진 등록", FileDialog.LOAD);
                 file_open.setVisible(true);
                 
-                String path = file_open.getDirectory();
+                String path = file_open.getDirectory(); // 파일 경로
+                String file_name = file_open.getFile(); // 파일 이름
+                
+                if(path!=null && file_name!=null){
+                    file_name_label.setText("경로 : "+path+file_name);
+                }
             }
+        });
+        
+        btnSave.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                FileDialog file_save = new FileDialog((JFrame) SwingUtilities.getWindowAncestor(HotelBS.this), "사진 저장", FileDialog.SAVE);
+                file_save.setVisible(true);
+                
+                String path = file_save.getDirectory(); // 파일 경로
+                String file_name = file_save.getFile(); // 파일 이름
+                
+                File file = new File(path);
+                BufferedWriter writer = null;
+                
+                try{
+                    writer = new BufferedWriter(new FileWriter(file+"/"+file_name));
+                    writer.write("저장된 파일");
+                    writer.flush();
+                    
+                    JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(HotelBS.this), "사진이 저장되었습니다.");
+                    
+                    writer.close();
+                    
+                } catch(IOException e1){
+                    e1.printStackTrace();
+                }
+            }
+            
         });
         
        
@@ -279,13 +323,20 @@ public class HotelBS extends JPanel{
         JButton modifyBT = new JButton("수정");
         JButton addBT = new JButton("추가");
         JButton deleteBT = new JButton("삭제");
-        //JButton okBT = new OKButton().setBT();
         JButton undoBT = new JButton("복구");
         
         south_panel.add(backBT);
         south_panel.add(modifyBT);
         south_panel.add(addBT);
         south_panel.add(undoBT);
+        
+        backBT.addActionListener(new ActionListener(){ // 추가 버튼 눌렀을 때
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                back(hotel_table);
+            }
+            
+        });
         
         addBT.addActionListener(new ActionListener(){ // 추가 버튼 눌렀을 때
             @Override
@@ -336,6 +387,20 @@ public class HotelBS extends JPanel{
         add(south_panel);
     }
     
+    private void back(JTable hotel_table){
+        
+        
+        JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        if (topFrame != null) {
+            topFrame.dispose();
+        }
+
+        Login click = new Login();
+        click.setVisible(true);
+
+    }
+    
+    
     private void add(JTable hotel_table){
         
       
@@ -364,11 +429,15 @@ public class HotelBS extends JPanel{
             }
             
             hotel_model = (DefaultTableModel) hotel_table.getModel();
-            lineCount = hotel_model.getRowCount() + 1;
-            hotel_model.addRow(new Object[]{String.valueOf(lineCount), hotel_name_text, hotelarea_text, detaild_address_text, guestnum_text, breakfast, roomtype, hotel_cost_text, hotel_register_text});
+            
+            int rowcount = hotel_model.getRowCount() + 1;
+            String type = "B";
+            String bs_num = type + rowcount;
+            
+            hotel_model.addRow(new Object[]{bs_num, hotel_name_text, hotelarea_text, detaild_address_text, guestnum_text, breakfast, roomtype, hotel_cost_text, hotel_register_text});
 
 
-            String data = lineCount + "|" + hotel_name_text + "|" + hotelarea_text + "|" + detaild_address_text + "|" + guestnum_text + "|" + breakfast + "|" + roomtype + "|" + hotel_cost_text + "|" + hotel_register_text;
+            String data = bs_num + "|" + hotel_name_text + "|" + hotelarea_text + "|" + detaild_address_text + "|" + guestnum_text + "|" + breakfast + "|" + roomtype + "|" + hotel_cost_text + "|" + hotel_register_text;
 
             // 파일에 데이터 추가하기
             BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
@@ -505,17 +574,14 @@ public class HotelBS extends JPanel{
        
     }
     
-    // OK버튼 들고오기
+
     
-    
-    /*
     private void ok(JTable hotel_table){
         
-        JOptionPane.showMessageDialog(this, "완료되었습니다.", "알림", JOptionPane.ERROR_MESSAGE);
-        Window window = SwingUtilities.getWindowAncestor(this);
-        window.dispose();
+       // OkBT 클래스 호출
     }
-*/
+
+
     
     
     
@@ -539,25 +605,8 @@ public class HotelBS extends JPanel{
  
     }
 
-    /*
-    @Override
-    public JButton setBT() {
-        OKButton okbutton = new OKButton();
-        return okbutton;
-    }
-*/
-
    
+   
+
 }
-    
-
-
-    
-    
-  
-    
-
-
-
-    
-
+   
