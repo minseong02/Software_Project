@@ -43,10 +43,8 @@ public class DeleteCommand implements Command {
         
         // 파일 데이터 갱신
         String panelName = productTablePanel.getCurrentPanelName();
-        String filename = productTablePanel.getFilename();
-        String delimiter = productTablePanel.getDelimiter();
         List<String[]> currentData = productTablePanel.getDataForPanel(panelName);
-        productData.updateFileData(currentData, filename, delimiter);
+        productData.updateFileData(currentData, productTablePanel.getFilename(), productTablePanel.getDelimiter());
 
     }
 
@@ -55,12 +53,10 @@ public class DeleteCommand implements Command {
         // 삭제한 행을 다시 추가합니다.
         model.insertRow(row, deletedRowData);
         
-     // 파일 데이터 갱신
+        // 파일 데이터 갱신
         String panelName = productTablePanel.getCurrentPanelName();
-        String filename = productTablePanel.getFilename();
-        String delimiter = productTablePanel.getDelimiter();
         List<String[]> currentData = productTablePanel.getDataForPanel(panelName);
-        productData.updateFileData(currentData, filename, delimiter);
+        productData.updateFileData(currentData, productTablePanel.getFilename(), productTablePanel.getDelimiter());
         
     }
 }

@@ -22,12 +22,7 @@ public class RegisterCommand implements Command {
     private String filename;
     private String delimiter;
     private ProductData productData;
-    
-    private Map<String, Integer> registrationColumnIndexMap;
-    private Map<String, JTable> tableMap;
-    private Map<String, List<String[]>> previousData = new HashMap<>();
-    
-    
+      
     
     public RegisterCommand(ProductTablePanel productTablePanel, String filename, String delimiter) {
         this.productTablePanel = productTablePanel;
@@ -43,8 +38,7 @@ public class RegisterCommand implements Command {
     }
 
     @Override
-    public void execute() {
-        // 등록 여부를 변경합니다.
+    public void execute() {        
         JTable targetTable = productTablePanel.getTable(panelName);
         int registrationColumnIndex = productTablePanel.getRegistrationColumnIndex(panelName);
         
@@ -71,7 +65,7 @@ public class RegisterCommand implements Command {
         if (targetTable != null && registrationColumnIndex != -1 && selectedRow != -1) {
             targetTable.getModel().setValueAt(originalStatus, selectedRow, registrationColumnIndex);
             
-         // 파일 데이터 갱신
+            // 파일 데이터 갱신
             List<String[]> currentData = productTablePanel.getDataForPanel(panelName);
             productData.updateFileData(currentData, filename, delimiter);
         } 

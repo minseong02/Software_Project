@@ -25,8 +25,7 @@ public class ProductData {
         //테이블에 불러올 파일의 데이터 값 읽기
         dataRows.clear();
         try (
-            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(filename),"UTF-8"))) { 
-            //한글 인코딩을 위해 CP949 사용함
+            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(filename),"UTF-8"))) {             
             String line;
             while((line = br.readLine()) != null) {
                 String[] rowData = line.split(Pattern.quote(delimiter));
