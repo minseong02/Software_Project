@@ -558,15 +558,10 @@ public class CreateUser extends javax.swing.JFrame {
         JoinUser userData = JoinUser.getInstance();
         userData.fRead();
         
-        try {
+
             userData.sPlite();
             userInfo = userData.returnUserInfo();
-        } 
-        catch (IOException ex) {
-            //Logger.getLogger(CreateNewId.class.getName()).log(Level.SEVERE, null, ex);
-            ex.printStackTrace();
-        }
-        
+
         // 사용자 정보
         int index = userData.getIndex();
         String ID = J_ID.getText();

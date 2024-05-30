@@ -189,14 +189,12 @@ public class Login extends javax.swing.JFrame {
             ex.printStackTrace();
         }
         
-        try {
+
             userData.sPlite();
             userInfo = userData.returnUserInfo();
-        } 
+
         
-        catch (IOException ex) {
-            ex.printStackTrace();
-        }
+
         
         try {
             managerData.sPlite();
