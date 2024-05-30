@@ -9,14 +9,23 @@ import java.awt.Color;
 import java.awt.FileDialog;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -26,52 +35,74 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
+import reserve.login.Login;
 
 /**
  *
  * @author mskim
  */
-public class AirplaneBS extends JPanel{
+public class AirplaneBS extends JPanel {
+    
     
     private Airplane_information airplaneInfo;
-    private JComboBox airline_combo;
-    private JComboBox departure_area_combo;
-    private JComboBox arrival_area_combo;
-    private JComboBox seat_type_combo;
+    private JComboBox airline;
+    private JComboBox departure_area;
+    private JComboBox arrival_area;
+    private JComboBox seat_type;
     private ButtonGroup route_group;
     private JRadioButton round_trip;
     private JRadioButton one_way;
-    private JTextField airplane_cost_text;
+    private JTextField airplane_cost;
     private JTextField airplane_register;
+    private String file;
+    private JLabel file_name_label;
+     
     private JComboBox search_combo;
+    private String search_combo_text;
     private JTextField search_text;
+    private String text;
+    private int row;
+    
     private JButton searchBT;
     private DefaultTableModel airplane_model;
     private JTable airplane_table;
     private JScrollPane airplane_scrollpane;
+    private int column;
+    
     
     
     public AirplaneBS(){
         
+        
         super(new BorderLayout());
         
-        String [] airline = {"::항공사::","제주 항공","대한 항공","에어 부산"};
-        String [] departure_area = {"::출발 ::","김포","제주","부산","대구","여수","광주","인천"};
-        String [] arrival_area= {"::출발 ::","김포","제주","부산","대구","여수","광주","인천"};
-        String [] seat_type = {"::좌석::", "이코노미","비즈니스","일등석"};
         
-        airplaneInfo = new Airplane_information(airline, departure_area,arrival_area, seat_type);
-        airline_combo = new JComboBox();
-        departure_area_combo = new JComboBox();
-        arrival_area_combo = new JComboBox();
-        seat_type_combo = new JComboBox();
+        String [] airline_combo = {"::항공사::","제주 항공","대한 항공","에어 부산"};
+        airline = new JComboBox<>(airline_combo);
+        String [] departure_area_combo = {"::출발 ::","김포","제주","부산","대구","여수","광주","인천"};
+        departure_area = new JComboBox<>(departure_area_combo);
+        String [] arrival_area_combo= {"::출발 ::","김포","제주","부산","대구","여수","광주","인천"};
+        arrival_area = new JComboBox<>(arrival_area_combo);
+        String [] seat_type_combo = {"::좌석::", "이코노미","비즈니스","일등석"};
+        seat_type = new JComboBox<>(seat_type_combo);
+        round_trip = new JRadioButton("왕복");
+        one_way = new JRadioButton("편도");
+        airplane_cost = new JTextField(10);
+        airplane_register = new JTextField(2);
+        
+        file = "airplane_business_textfile.txt";
+        
+        airplaneInfo = new Airplane_information(
+                (String) airline.getSelectedItem(),
+                (String) departure_area.getSelectedItem(),
+                (String) arrival_area.getSelectedItem(),
+                (String) seat_type.getSelectedItem(),
+                round_trip.isSelected()? "왕복" : "",
+                one_way.isSelected()? "편도" : "",
+                airplane_cost.getText(),
+                airplane_register.getText());
+                
         route_group = new ButtonGroup();
-        round_trip = new JRadioButton();
-        one_way = new JRadioButton();
-        airplane_cost_text = new JTextField();
-        airplane_register = new JTextField();
-        search_combo = new JComboBox();
-        
         
         airplane_list();
         
@@ -95,34 +126,37 @@ public class AirplaneBS extends JPanel{
         
         // 항공사
         input_panel.add(new JLabel("항공사"));
-        airline_combo = airplaneInfo.getAirline();
-        input_panel.add(airline_combo);
+        airline.setSelectedItem(airplaneInfo.getAirline());
+        input_panel.add(airline);
         
         // 출발 지역
         input_panel.add(new JLabel("출발 지역"));
-        departure_area_combo = airplaneInfo.getDepartureArea();
-        input_panel.add(departure_area_combo);
+        departure_area.setSelectedItem(airplaneInfo.getDepartureArea());
+        input_panel.add(departure_area);
         
         // 도착 지역
         input_panel.add(new JLabel("도착 지역"));
-        arrival_area_combo = airplaneInfo.getArrivalArea();
-        input_panel.add(arrival_area_combo);
+        arrival_area.setSelectedItem(airplaneInfo.getArrivalArea());
+        input_panel.add(arrival_area);
         
         // 좌석 타입
         input_panel.add(new JLabel("좌석 타입"));
-        seat_type_combo = airplaneInfo.getSeatType();
-        input_panel.add(seat_type_combo);
+        seat_type.setSelectedItem(airplaneInfo.getSeatType());
+        input_panel.add(seat_type);
          
         // 왕복 편도 선택
         input_panel.add(new JLabel("왕복 / 편도"));
         JPanel route_panel = new JPanel();
         route_panel.setLayout(new GridLayout(1, 2));
-        
-        round_trip = airplaneInfo.getRoundTrip();
-        one_way =airplaneInfo.getOneWay();
-        
+
         route_group.add(round_trip);
         route_group.add(one_way);
+        if("왕복".equals(airplaneInfo.getRoundTrip())){
+            round_trip.setSelected(true);
+        }
+        else if("편도".equals(airplaneInfo.getOneWay())){
+            one_way.setSelected(true);
+        }
         
         route_panel.add(round_trip);
         route_panel.add(one_way);
@@ -135,30 +169,68 @@ public class AirplaneBS extends JPanel{
         input_panel.add(new JLabel("항공 비용"));
         JPanel costPanel = new JPanel();
         costPanel.setLayout(new GridLayout(1, 2));
-        airplane_cost_text = airplaneInfo.getAirplaneCost();
-        costPanel.add(airplane_cost_text);
+        airplane_cost.setText(airplaneInfo.getAirplaneCost());
+        costPanel.add(airplane_cost);
         costPanel.add(new JLabel(" 원"));
         input_panel.add(costPanel);
         
-        
-        
         // 등록 여부
         input_panel.add(new JLabel("등록 여부"));
-        airplane_register = airplaneInfo. getAirplaneRegister();
+        airplane_register.setText(airplaneInfo.getAirplaneRegister());
         input_panel.add(airplane_register);
         
         // 사진 등록
         input_panel.add(new JLabel("항공 대표 사진"));
-        JButton btnOpen = new JButton("사진 등록");
-        input_panel.add(btnOpen);
+        JPanel photoPanel = new JPanel();
+        photoPanel.setLayout(new GridLayout(3,1));
+        JButton btnOpen = new JButton("사진 열기");
+        file_name_label= new JLabel();
+        JButton btnSave = new JButton("사진 저장");
+        photoPanel.add(btnOpen);
+        photoPanel.add(file_name_label);
+        photoPanel.add(btnSave);
+        input_panel.add(photoPanel);
         
-        btnOpen.addActionListener(new ActionListener(){
+        btnOpen.addActionListener(new ActionListener(){ // 사진등록 버튼을 누르면 다운로드 폴더로 들어가서 사진을 선택후 
             @Override
             public void actionPerformed(ActionEvent e) {
-               FileDialog file_open = new FileDialog((JFrame) SwingUtilities.getWindowAncestor(AirplaneBS.this), "사진 등록", FileDialog.LOAD);
+               FileDialog file_open = new FileDialog((JFrame) SwingUtilities.getWindowAncestor(AirplaneBS.this), "사진 열기", FileDialog.LOAD);
                file_open.setVisible(true);
                 
-                String path = file_open.getDirectory();
+                String path = file_open.getDirectory(); // 파일 경로
+                String file_name = file_open.getFile(); // 파일 이름
+                
+                if(path!=null && file_name!=null){
+                    file_name_label.setText("경로 : "+path+file_name);
+                }
+            }
+            
+        });
+        
+        btnSave.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                FileDialog file_save = new FileDialog((JFrame) SwingUtilities.getWindowAncestor(AirplaneBS.this), "사진 저장", FileDialog.SAVE);
+                file_save.setVisible(true);
+                
+                String path = file_save.getDirectory(); // 파일 경로
+                String file_name = file_save.getFile(); // 파일 이름
+                
+                File file = new File(path);
+                BufferedWriter writer = null;
+                
+                try{
+                    writer = new BufferedWriter(new FileWriter(file+"/"+file_name));
+                    writer.write("저장된 파일");
+                    writer.flush();
+                    
+                    JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(AirplaneBS.this), "사진이 저장되었습니다.");
+                    
+                    writer.close();
+                    
+                } catch(IOException e1){
+                    e1.printStackTrace();
+                }
             }
             
         });
@@ -171,7 +243,7 @@ public class AirplaneBS extends JPanel{
         JPanel search_panel = new JPanel();
         
         // 콤보 박스
-        String [] search = {"비즈니스 넘버", "항공사"};
+        String [] search = {"항공사"};
         search_combo = new JComboBox(search);
         search_panel.add(search_combo);
         
@@ -223,7 +295,15 @@ public class AirplaneBS extends JPanel{
         south_panel.setBounds(150,690,400,50);
         add(south_panel);
         
-        /*
+        
+        backBT.addActionListener(new ActionListener(){ // 추가 버튼 눌렀을 때
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                back(airplane_table);
+            }
+            
+        });
+
         addBT.addActionListener(new ActionListener(){ // 추가 버튼 눌렀을 때
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -255,19 +335,195 @@ public class AirplaneBS extends JPanel{
             
         });
         
-        okBT.addActionListener(new ActionListener(){
+        okBT.addActionListener(new ActionListener(){ // 확인 버튼 눌렀을 때
             @Override
             public void actionPerformed(ActionEvent e) {
                 ok(airplane_table);
             }
             
         });
-
+   
         
-*/
     }
+    
+    private void add(JTable airplane_table)
+    {
+        try{
+            String airline_text = (String) airline.getSelectedItem();
+            String departure_area_text = (String)departure_area.getSelectedItem();
+            String arrival_area_text = (String)arrival_area.getSelectedItem();
+            String seat_type_text = (String)seat_type.getSelectedItem();
+            String route = "";
+            if(round_trip.isSelected()){
+                route="왕복";
+            }
+            else if(one_way.isSelected()){
+                route="편도";
+            }
+            String airplane_cost_text = airplane_cost.getText();
+            String airplane_register_text = airplane_register.getText();
+            
+            if (airline_text.isEmpty() || departure_area_text.isEmpty() || arrival_area_text.isEmpty() || seat_type_text.isEmpty() || route.isEmpty() || airplane_cost_text.isEmpty() || airplane_register_text.isEmpty()){
+                JOptionPane.showMessageDialog(this, "모든 필드를 입력하세요.", "오류", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            airplane_model = (DefaultTableModel) airplane_table.getModel();
+            
+            int rowcount = airplane_model.getRowCount() + 1;
+            String type = "B";
+            String bs_num = type + rowcount;
+            
+            
+            
+            airplane_model.addRow(new Object[]{
+                bs_num,
+                airline_text,
+                departure_area_text,
+                arrival_area_text,
+                seat_type_text,
+                route,
+                airplane_cost_text,
+                airplane_register_text
+            });
+            
+            String data = bs_num + "|" + airline_text +"|" + departure_area_text +"|" + arrival_area_text +"|" + seat_type_text  +"|" + route  +"|" + airplane_cost_text +"|" + airplane_register_text;
+            
+            BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
+            writer.write(data+"\n");
+            writer.close();
+            
+            
+        }
+         catch (IOException ex) {
+            ex.printStackTrace();
+            
+        }
+    }
+    
+    
+    private void back(JTable airplane_table){
+        JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        if (topFrame != null) {
+            topFrame.dispose();
+        }
+
+        Login click = new Login();
+        click.setVisible(true);
+    }
+    
+    private void search(JTable airplane_table){
+        
+        search_combo_text = (String)search_combo.getSelectedItem();
+        text = search_text.getText();
+        
+        try{
+            
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+            String line;
+            DefaultTableModel model = (DefaultTableModel) airplane_table.getModel();
+            model.setRowCount(0); // 테이블 초기화
+                    
+            while ((line = reader.readLine()) != null) {
+                String[] data = line.split("\\|");
+                if (search_combo_text == null) { // 검색 콤보 상자가 선택되지 않았을 경우 전체 조회로 처리
+                    model.addRow(data);
+                }
+                else if(search_combo_text.equals("전체 조회")){
+                    model.addRow(data);
+                }
+                else if (search_combo_text.equals("비즈니스 넘버") && data[0].equals(text)) {
+                    model.addRow(data); 
+                }
+                else if (search_combo_text.equals("호텔 이름") && data[1].equals(text)) {
+                    model.addRow(data);
+                }
+            }
+            
+            reader.close();
+        }
+        catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        
+    }
+    
+    private void modify(JTable airplane_Table){
+        
+        row = airplane_table.getSelectedRow();
+        
+        String new_route = "";
+        if(round_trip.isSelected()){
+            new_route = "왕복";
+        }
+        else if(one_way.isSelected()){
+            new_route = "편도";
+        }
+        
+        
+        
+        if(row!=-1){
+            String[] new_airplane_input = {
+                (String)airline.getSelectedItem(),
+                (String)departure_area.getSelectedItem(),
+                (String)arrival_area.getSelectedItem(),
+                (String)seat_type.getSelectedItem(),
+                new_route,
+                airplane_cost.getText(),
+                airplane_register.getText()
+            };
+            
+            DefaultTableModel model = (DefaultTableModel) airplane_table.getModel();
+            for(int i=0; i<new_airplane_input.length; i++){
+                if(new_airplane_input[i].isEmpty()){ // 수정된 정보가 없으면
+                    new_airplane_input[i] = (String) airplane_model.getValueAt(row,i+1); // 현재 값을 유지 (get을 쓴거임)
+                }
+                airplane_model.setValueAt(new_airplane_input[i],row,i+1); 
+            }
+            
+        }
+        
+        
+    }
+    
+    private void delete(JTable airplane_table){
+        
+        int row = airplane_table.getSelectedRow();
+        
+        airplane_model = (DefaultTableModel) airplane_table.getModel();
+        
+        column = airplane_model.getColumnCount();
+        String[] row_data = new String[column];
+        for(int i=0; i<column; i++){
+             Object value = airplane_model.getValueAt(row, i);
+             if(value!=null){
+                 row_data[i] = value.toString(); // 타입변환
+             }
+             else{
+                 row_data[i] = "";
+             }
+        }
+        
+        airplane_model.removeRow(row);
+        
+        for(int i=row; i<airplane_model.getRowCount(); i++){
+            airplane_model.setValueAt(i+1, i, 0);
+        }
+        
+    }
+    
+    private void ok(JTable airplane_table){
+        JOptionPane.showMessageDialog(this, "완료되었습니다.", "알림", JOptionPane.ERROR_MESSAGE);
+        Window window = SwingUtilities.getWindowAncestor(this);
+        window.dispose();
+    }
+
+
+
+ 
+    
+    
+    
+    
 }
-
-
-
 
