@@ -27,6 +27,7 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
+import reserve.login.Login;
 
 
 /**
@@ -57,6 +58,7 @@ public class HotelBS extends JPanel implements BusinessInterface,ButtonInterface
     private JTextField search_text;
     private String text;
     private JLabel file_name_label;
+    private JButton searchBT;
     
     
     
@@ -323,7 +325,7 @@ public class HotelBS extends JPanel implements BusinessInterface,ButtonInterface
         search_panel.add(search_text);
         
         // 조회 버튼
-        JButton searchBT = new JButton("조회");
+        searchBT = new JButton("조회");
         search_panel.add(searchBT);
         
         return search_panel;
@@ -350,7 +352,6 @@ public class HotelBS extends JPanel implements BusinessInterface,ButtonInterface
         south_panel.setLayout(new FlowLayout(FlowLayout.CENTER, 7, 2));
        
         JButton backBT = new JButton("이전");
-        JButton searchBT = new JButton("검색");
         JButton modifyBT = new JButton("수정");
         JButton addBT = new JButton("추가");
         JButton deleteBT = new JButton("삭제");
@@ -359,7 +360,6 @@ public class HotelBS extends JPanel implements BusinessInterface,ButtonInterface
         
         
         south_panel.add(backBT);
-        south_panel.add(searchBT);
         south_panel.add(modifyBT);
         south_panel.add(addBT);
         south_panel.add(deleteBT);
@@ -494,38 +494,27 @@ public class HotelBS extends JPanel implements BusinessInterface,ButtonInterface
         
     }
     
-    private void search(JTable hotel_table){
-        
+    private void search(JTable airplane_table){
+        // 사용자가 선택한 검색 기준과 입력한 텍스트 가져오기
         search_combo_text = (String)search_combo.getSelectedItem();
         text = search_text.getText();
-                
-        try{
-                    
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+    
+        // 파일에서 항공사 정보 읽어오기
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
-            DefaultTableModel model = (DefaultTableModel) hotel_table.getModel();
-            model.setRowCount(0); // 테이블 초기화
-                    
+            DefaultTableModel airplane_model = (DefaultTableModel) airplane_table.getModel();
+            airplane_model.setRowCount(0); // 테이블 초기화
+        
             while ((line = reader.readLine()) != null) {
                 String[] data = line.split("\\|");
-                if (search_combo_text == null) { // 검색 콤보 상자가 선택되지 않았을 경우 전체 조회로 처리
-                    model.addRow(data);
-                }
-                else if(search_combo_text.equals("전체 조회")){
-                    model.addRow(data);
-                }
-                else if (search_combo_text.equals("비즈니스 넘버") && data[0].equals(text)) {
-                    model.addRow(data); 
-                }
-                else if (search_combo_text.equals("호텔 이름") && data[1].equals(text)) {
-                    model.addRow(data);
+                if (search_combo_text.equals("전체 조회") || 
+                    (search_combo_text.equals("호텔 이름") && data.length >= 3 && data[2].equals(text))) {
+                    airplane_model.addRow(data);
                 }
             }
-            
-            reader.close();
-                
         } catch (IOException ex) {
             ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "파일 읽기 오류.", "오류", JOptionPane.ERROR_MESSAGE);
         }
     }
     
@@ -644,7 +633,8 @@ public class HotelBS extends JPanel implements BusinessInterface,ButtonInterface
 
     @Override
     public void onBack() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        ButtonHandler buttonhandler = new ButtonHandler();
+        buttonhandler.onBack();
     }
 
    

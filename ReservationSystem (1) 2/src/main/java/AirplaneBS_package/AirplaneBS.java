@@ -317,15 +317,13 @@ public class AirplaneBS extends JPanel implements BusinessInterface,ButtonInterf
        
         
         
-        JButton backBT = new JButton("이전");
-        JButton searchBT = new JButton("검색");
+        JButton backBT = new JButton("이전"); 
         JButton modifyBT = new JButton("수정");
         JButton addBT = new JButton("추가");
         JButton deleteBT = new JButton("삭제");
         JButton okBT = new JButton("확인");
         
         south_panel.add(backBT);
-        south_panel.add(searchBT);
         south_panel.add(modifyBT);
         south_panel.add(addBT);
         south_panel.add(deleteBT);
@@ -451,49 +449,29 @@ public class AirplaneBS extends JPanel implements BusinessInterface,ButtonInterf
     }
     
     private void search(JTable airplane_table){
-        
+        // 사용자가 선택한 검색 기준과 입력한 텍스트 가져오기
         search_combo_text = (String)search_combo.getSelectedItem();
         text = search_text.getText();
-        
-     
-        String bs_user_num = "";
-        try (BufferedReader reader = new BufferedReader(new FileReader("File/BSLogin.txt"))) {
+    
+        // 파일에서 항공사 정보 읽어오기
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
+            DefaultTableModel airplane_model = (DefaultTableModel) airplane_table.getModel();
+            airplane_model.setRowCount(0); // 테이블 초기화
+        
             while ((line = reader.readLine()) != null) {
-                bs_user_num = line;
+                String[] data = line.split("\\|");
+                if (search_combo_text.equals("전체 조회") || 
+                    (search_combo_text.equals("항공사") && data.length >= 3 && data[2].equals(text))) {
+                    airplane_model.addRow(data);
+                }
             }
         } catch (IOException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "파일 읽기 오류.", "오류", JOptionPane.ERROR_MESSAGE);
-            return;
         }
-
-        
-        
-        
-        try{
-            
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-            String line;
-            airplane_model = (DefaultTableModel) airplane_table.getModel();
-            airplane_model.setRowCount(0); // 테이블 초기화
-                    
-            while ((line = reader.readLine()) != null) {
-                String[] data = line.split("\\|");
-                if (search_combo_text.equals("전체 조회") ||
-                    (search_combo_text.equals("항공사") && data[2].equals(text))) {
-                    airplane_model.addRow(data);
-                }
-            }
-               
-            
-            reader.close();
-        }
-        catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        
     }
+
     
     private void modify(JTable airplane_Table){
         
@@ -567,7 +545,8 @@ public class AirplaneBS extends JPanel implements BusinessInterface,ButtonInterf
 
     @Override
     public void onBack() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        ButtonHandler buttonhandler = new ButtonHandler();
+        buttonhandler.onBack();
     }
     
   

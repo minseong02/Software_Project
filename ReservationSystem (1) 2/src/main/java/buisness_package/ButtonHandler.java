@@ -9,6 +9,7 @@ import java.awt.Window;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import reserve.login.Login;
 
 /**
  *
@@ -30,6 +31,8 @@ public class ButtonHandler implements ButtonInterface{
 
     @Override
     public void onBack() {
+        Login loginWindow = new Login();
+        loginWindow.setVisible(true);
         
     }
     
