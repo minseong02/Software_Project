@@ -6,7 +6,7 @@ package manager;
 
 import manager.ManagerMode;
 import manager.fac.A_Businessdisplay;
-import manager.fac.A_Userdisplay1;
+import manager.fac.A_Userdisplay;
 
 /**
  *
@@ -15,7 +15,7 @@ import manager.fac.A_Userdisplay1;
 public class A_Memberdisplay extends javax.swing.JFrame {
 
     /**
-     * Creates new form A_Userdisplay1
+     * Creates new form A_Userdisplay
      */
     public A_Memberdisplay() {
         initComponents();
@@ -70,7 +70,7 @@ public class A_Memberdisplay extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(255, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(usermng_butt, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(businessmng_butt, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -83,7 +83,7 @@ public class A_Memberdisplay extends javax.swing.JFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(195, Short.MAX_VALUE)
+                .addContainerGap(198, Short.MAX_VALUE)
                 .addComponent(usermng_butt, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(213, 213, 213)
                 .addComponent(businessmng_butt, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -93,11 +93,12 @@ public class A_Memberdisplay extends javax.swing.JFrame {
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void usermng_buttActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_usermng_buttActionPerformed
         // TODO add your handling code here:
-        A_Userdisplay1 UM = new A_Userdisplay1();
+        A_Userdisplay UM = new A_Userdisplay();
         UM.setVisible(true);
         setVisible(false);
         dispose();

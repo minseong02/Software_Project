@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.table.DefaultTableModel;
+import manager.fac.A_Businessdisplay;
 import reserve.login.Login;
 
 public class ManagerMode extends JFrame implements ActionListener {
@@ -110,9 +111,8 @@ public class ManagerMode extends JFrame implements ActionListener {
             resetButtonPanel();
         } else if ("종료".equals(actionCommand)) {
             dispose();
-            new Login().setVisible(true); 
-} 
-        else if ("저장".equals(actionCommand)) {            
+            new Login().setVisible(true);
+        } else if ("저장".equals(actionCommand)) {
             if (productData != null) {
                 // 현재 선택한 테이블의 데이터를 가져옴
                 String panelName = productTablePanel.getCurrentPanelName();
@@ -122,6 +122,13 @@ public class ManagerMode extends JFrame implements ActionListener {
             } else {
                 System.err.println("Error: productData is null.");
             }
+        } else if ("회원 관리".equals(actionCommand)) {
+        A_Memberdisplay aM = new A_Memberdisplay();
+        aM.setVisible(true);
+        setVisible(false);
+        dispose();
+            
+
         }
     }
 

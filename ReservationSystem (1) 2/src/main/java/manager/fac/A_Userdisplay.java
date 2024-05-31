@@ -13,19 +13,19 @@ import manager.Buylist;
  *
  * @author 원채연
  */
-public class A_Userdisplay1 extends javax.swing.JFrame {
+public class A_Userdisplay extends javax.swing.JFrame {
 
     private PUserManage userManager;
 
     /**
      * Creates new form A_UserManage
      */
-    public A_Userdisplay1() {
+    public A_Userdisplay() {
         initComponents();
         setTitle("사용자 관리");
         setLocationRelativeTo(null);
         setSize(700, 800);
-        setDefaultCloseOperation(A_Userdisplay1.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(A_Userdisplay.EXIT_ON_CLOSE);
 
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
         FManageFactory fac = new FUserFactory();
@@ -45,7 +45,6 @@ public class A_Userdisplay1 extends javax.swing.JFrame {
         buylist_butt1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(700, 800));
         setResizable(false);
 
         jTable1.setFont(new java.awt.Font("맑은 고딕", 0, 17)); // NOI18N

@@ -25,4 +25,5 @@
         <maven.compiler.target>17</maven.compiler.target>
         <exec.mainClass>ReservationSystem</exec.mainClass>
     </properties>
+    <name>ReservationSystem</name>
 </project>
