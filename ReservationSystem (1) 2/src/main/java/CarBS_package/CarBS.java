@@ -3,18 +3,19 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package CarBS_package;
-
-
+import buisness_package.BusinessInterface;
+import buisness_package.ButtonHandler;
+import buisness_package.ButtonInterface;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FileDialog;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -34,13 +35,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
-import reserve.login.Login;
 
 /**
  *
  * @author mskim
  */
-public class CarBS extends JPanel {
+public class CarBS extends JPanel implements BusinessInterface,ButtonInterface{
     
     private CarBS_information carInfo;
     private JTextField car_company;
@@ -66,6 +66,7 @@ public class CarBS extends JPanel {
     private String text;
     private int row;
     private int lineCount;
+    private JLabel file_name_label;
     
     
     public CarBS(){
@@ -99,22 +100,51 @@ public class CarBS extends JPanel {
         
         file = "car_business_textfile.txt";
         
-              
-        rentalcar_list();
+     
     }
     
-    private void rentalcar_list(){
+    @Override
+    public JPanel createPanel(ButtonInterface buttonInterface) {
         
-        setLayout(null);
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(null);
         
         // 이미지를 표시할 JLabel//
         JLabel hotel_image_label = new JLabel();
         ImageIcon hotel_list_Icon = new ImageIcon("car_list.png");
         hotel_image_label.setIcon(hotel_list_Icon);
         hotel_image_label.setBounds(18,1,80,80);
-        add(hotel_image_label);
+        mainPanel.add(hotel_image_label);
         
-        // 상단 패널 //
+        // 입력 패널 추가
+        JPanel inputPanel = createInputPanel();
+        inputPanel.setBounds(15, 75, 655, 300);
+        mainPanel.add(inputPanel);
+
+        // 검색 패널 추가
+        JPanel searchPanel = searchPanel();
+        searchPanel.setBounds(15, 400, 655, 50);
+        mainPanel.add(searchPanel);
+
+        // 센터 패널 추가
+    
+        JPanel centerPanel = centerPanel();
+        centerPanel.setBounds(15, 450, 655, 230);
+        mainPanel.add(centerPanel);
+
+        // 하단 패널 추가
+        JPanel southPanel = southPanel(buttonInterface);
+        southPanel.setBounds(150, 690, 400, 50);
+        mainPanel.add(southPanel);
+
+
+    return mainPanel;
+        
+        
+        
+    }
+    
+    private JPanel createInputPanel(){
         JPanel input_panel = new JPanel();
         input_panel.setBorder(new TitledBorder(new LineBorder(Color.gray,1),"입력"));
         input_panel.setLayout(new GridLayout(4,4,10,15));
@@ -206,8 +236,15 @@ public class CarBS extends JPanel {
         
         // 사진 등록
         input_panel.add(new JLabel("렌터카 대표 사진"));
-        JButton btnOpen = new JButton("사진 등록");
-        input_panel.add(btnOpen);
+        JPanel photoPanel = new JPanel();
+        photoPanel.setLayout(new GridLayout(3,1));
+        JButton btnOpen = new JButton("사진 열기");
+        file_name_label= new JLabel();
+        JButton btnSave = new JButton("사진 저장");
+        photoPanel.add(btnOpen);
+        photoPanel.add(file_name_label);
+        photoPanel.add(btnSave);
+        input_panel.add(photoPanel);
         
         btnOpen.addActionListener(new ActionListener() {
             @Override
@@ -215,20 +252,51 @@ public class CarBS extends JPanel {
                 FileDialog file_open = new FileDialog((JFrame) SwingUtilities.getWindowAncestor(CarBS.this), "사진 등록", FileDialog.LOAD);
                 file_open.setVisible(true);
                 
-                String path = file_open.getDirectory();
+                String path = file_open.getDirectory(); // 파일 경로
+                String file_name = file_open.getFile(); // 파일 이름
+                
+                if(path!=null && file_name!=null){
+                    file_name_label.setText("경로 : "+path+file_name);
+                }
             }
         });
         
+        btnSave.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                FileDialog file_save = new FileDialog((JFrame) SwingUtilities.getWindowAncestor(CarBS.this), "사진 저장", FileDialog.SAVE);
+                file_save.setVisible(true);
+                
+                String path = file_save.getDirectory(); // 파일 경로
+                String file_name = file_save.getFile(); // 파일 이름
+                
+                File file = new File(path);
+                BufferedWriter writer = null;
+                
+                try{
+                    writer = new BufferedWriter(new FileWriter(file+"/"+file_name));
+                    writer.write("저장된 파일");
+                    writer.flush();
+                    
+                    JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(CarBS.this), "사진이 저장되었습니다.");
+                    
+                    writer.close();
+                    
+                } catch(IOException e1){
+                    e1.printStackTrace();
+                }
+            }
+            
+        });
         
-        input_panel.setBounds(15,75,655,300);
-        add(input_panel);
-        
-        
-        // 검색 패널 //
+        return input_panel;
+    }
+    
+    private JPanel searchPanel(){
         JPanel search_panel = new JPanel();
         
         // 콤보 박스
-        String [] search = {"전체 조회","비즈니스 넘버", "자동차 회사"};
+        String [] search = {"전체 조회","자동차 회사"};
         search_combo = new JComboBox(search);
         search_panel.add(search_combo);
         
@@ -240,62 +308,45 @@ public class CarBS extends JPanel {
         searchBT = new JButton("조회");
         search_panel.add(searchBT);
         
-        search_panel.setBounds(15,400,655,50);
-        add(search_panel);
+        return search_panel;
+    }
+    
+    private JPanel centerPanel(){
         
-        
-        
-        
-        // 센터 패널 //
         JPanel car_list_panel = new JPanel(new BorderLayout());
-        String header[] = {"비즈니스 넘버", "자동차 회사", "대여시간","비용","차종","연료","하이패스","등록 여부"};
+        String header[] = {"비즈니스 넘버", "사업자 유저넘버","자동차 회사", "대여시간","비용","차종","연료","하이패스","등록 여부"};
         String contents[][]={};
         
         car_model = new DefaultTableModel(contents, header);
         car_table = new JTable(car_model);
         car_scrollpane = new JScrollPane(car_table);
         car_list_panel.add(car_scrollpane, BorderLayout.CENTER);
-
-        car_list_panel.setBounds(15,450,655,230);
-        add(car_list_panel);
         
-         // 하단 패널
+        return car_list_panel;
+    }
+    
+    private JPanel southPanel(ButtonInterface buttonInterface){
+        
         JPanel south_panel = new JPanel();
-        south_panel.setLayout(new FlowLayout(FlowLayout.CENTER, 7, 3));
+        south_panel.setLayout(new FlowLayout(FlowLayout.CENTER, 15, 5));
        
+        
+        
         JButton backBT = new JButton("이전");
+        JButton searchBT = new JButton("검색");
         JButton modifyBT = new JButton("수정");
         JButton addBT = new JButton("추가");
         JButton deleteBT = new JButton("삭제");
         JButton okBT = new JButton("확인");
-
         
         south_panel.add(backBT);
+        south_panel.add(searchBT);
         south_panel.add(modifyBT);
         south_panel.add(addBT);
         south_panel.add(deleteBT);
         south_panel.add(okBT);
         
-        
-        south_panel.setBounds(150,690,400,50);
-        add(south_panel);
-        
-        backBT.addActionListener(new ActionListener(){ // 추가 버튼 눌렀을 때
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                back(car_table);
-            }
-            
-        });
-        
-        
-        addBT.addActionListener(new ActionListener(){ // 추가 버튼 눌렀을 때
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                add(car_table);
-            }
-            
-        });
+        backBT.addActionListener(e->buttonInterface.onBack());
         
         searchBT.addActionListener(new ActionListener(){ // 조회 버튼 눌렀을 때
             @Override
@@ -311,6 +362,15 @@ public class CarBS extends JPanel {
             }
         });
         
+        addBT.addActionListener(new ActionListener(){ // 추가 버튼 눌렀을 때
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                add(car_table);
+            }
+            
+        });
+        
+        
         deleteBT.addActionListener(new ActionListener(){ // 삭제 버튼 눌렀을 때
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -319,34 +379,10 @@ public class CarBS extends JPanel {
             
         });
         
-        okBT.addActionListener(new ActionListener(){
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ok(car_table);
-            }
-            
-        });
+        okBT.addActionListener(e->buttonInterface.onOk());
         
+        return south_panel;
         
-        
-        
-        
-        
-        
-    }
-    
-    private void back(JTable hotel_table){
-        
-        
-        // 현재 패널이 포함된 프레임 찾기 및 닫기
-        JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        if (topFrame != null) {
-            topFrame.dispose();
-        }
-
-        Login click = new Login();
-        click.setVisible(true);
-
     }
     
 
@@ -386,11 +422,37 @@ public class CarBS extends JPanel {
             }
             
             car_model = (DefaultTableModel) car_table.getModel();
-            lineCount = car_model.getRowCount()+1;
-            car_model.addRow(new Object[]{String.valueOf(lineCount),car_company_text,rental_time_text,car_cost_text,vehicle_type_text,oil,high_pass,car_registration});
+            
+            try (BufferedReader reader = new BufferedReader(new FileReader("car_business_textfile.txt"))) {
+                lineCount = (int) reader.lines().count() + 1;
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "파일 읽기 오류.", "오류", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            String type = "C";
+            String bs_num = type+lineCount;
             
             
-            data = lineCount + "|" + car_company_text + "|" + rental_time_text + "|" +car_cost_text + "|" + vehicle_type_text + "|" + oil + "|" + high_pass + "|" + car_registration;
+            String bs_user_num = "";
+            try (BufferedReader reader = new BufferedReader(new FileReader("File/BSLogin.txt"))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    bs_user_num = line;
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "파일 읽기 오류.", "오류", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            
+            
+            car_model.addRow(new Object[]{bs_num, bs_user_num ,car_company_text,rental_time_text,car_cost_text,vehicle_type_text,oil,high_pass,car_registration});
+            
+            
+            data = bs_num + "|" + bs_user_num + "|" + car_company_text + "|" + rental_time_text + "|" +car_cost_text + "|" + vehicle_type_text + "|" + oil + "|" + high_pass + "|" + car_registration;
                    
             // 파일에 데이터 추가하기
             BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
@@ -445,46 +507,19 @@ public class CarBS extends JPanel {
     
     private void modify(JTable car_table){
         /*
+        
         row = car_table.getSelectedRow();
         
-        String new_breakfast = "";
-        if (breakfast_yes.isSelected()) {
-            new_breakfast = "O";
-        } else if (breakfast_no.isSelected()) {
-            new_breakfast = "X";
+        if(row!=-1){
+            String[]
         }
+             
         
-        String new_roomtype = "";
-        if (suit_room.isSelected()) {
-            new_roomtype = "스위트룸";
-        } else if (deluxe_room.isSelected()) {
-            new_roomtype = "디럭스룸";
-        } else if (standard_room.isSelected()) {
-            new_roomtype = "스탠다드룸";
-        }
+        
 
-                
-        if(row!=-1){ // 만약 선택된 행이 있다면
-            String[] new_hotel_input={ // 각각의 새로운(수정돤) 정보를 배열로 저장
-                hotel_name.getText(),
-                (String) hotel_area.getSelectedItem(),
-                detailed_address.getText(),
-                (String) num_guest.getSelectedItem(),
-                new_breakfast,
-                new_roomtype,
-                hotel_cost.getText(),
-                hotel_register.getText()
-            };
-         
-            DefaultTableModel model = (DefaultTableModel) hotel_table.getModel();
-            for(int i=0; i<new_hotel_input.length; i++){
-                if(new_hotel_input[i].isEmpty()){ // 수정된 정보가 없으면
-                    new_hotel_input[i] = (String) hotel_model.getValueAt(row,i+1); // 현재 값을 유지 (get을 쓴거임)
-                }
-                hotel_model.setValueAt(new_hotel_input[i],row,i+1); 
-            }
-        }
-*/
+                */
+        
+
     }
     
     private void delete(JTable car_table){
@@ -496,19 +531,23 @@ public class CarBS extends JPanel {
         }
 
     }
+   
+
     
-    private void ok(JTable car_table){
-        JOptionPane.showMessageDialog(this, "완료되었습니다.", "알림", JOptionPane.ERROR_MESSAGE);
-        Window window = SwingUtilities.getWindowAncestor(this);
-        window.dispose();
+            
+
+    @Override
+    public void onOk() {
+        ButtonHandler buttonhandler = new ButtonHandler();
+        buttonhandler.onOk();}
+
+    @Override
+    public void onBack() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
+   
+
+   
   
 }
-
- 
-
-
-    
-
-

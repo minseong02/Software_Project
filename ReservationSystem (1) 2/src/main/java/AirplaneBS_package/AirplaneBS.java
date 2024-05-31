@@ -4,18 +4,21 @@
  */
 package AirplaneBS_package;
 
+import buisness_package.BusinessInterface;
+import buisness_package.ButtonHandler;
+import buisness_package.ButtonInterface;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FileDialog;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -35,13 +38,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
-import reserve.login.Login;
 
 /**
  *
  * @author mskim
  */
-public class AirplaneBS extends JPanel {
+public class AirplaneBS extends JPanel implements BusinessInterface,ButtonInterface{
     
     
     private Airplane_information airplaneInfo;
@@ -104,22 +106,51 @@ public class AirplaneBS extends JPanel {
                 
         route_group = new ButtonGroup();
         
-        airplane_list();
+        
+  
         
     }
     
-    void airplane_list(){
-        setLayout(null);
+    @Override
+    public JPanel createPanel(ButtonInterface buttonInterface) {
         
-        // 이미지를 표시할 라벨
-        JLabel airplane_image_label = new JLabel();
-        ImageIcon airplane_list_Icon = new ImageIcon("airplane_list.png");
-        airplane_image_label.setIcon(airplane_list_Icon);
-        airplane_image_label.setBounds(18,1,80,80);
-        add(airplane_image_label);
+    JPanel mainPanel = new JPanel();
+    mainPanel.setLayout(null);
+    
+    // 이미지를 표시할 라벨
+    JLabel airplane_image_label = new JLabel();
+    ImageIcon airplane_list_Icon = new ImageIcon("airplane_list.png");
+    airplane_image_label.setIcon(airplane_list_Icon);
+    airplane_image_label.setBounds(18,1,80,80);
+    mainPanel.add(airplane_image_label);
+
+    // 입력 패널 추가
+    JPanel inputPanel = createInputPanel();
+    inputPanel.setBounds(15, 75, 655, 300);
+    mainPanel.add(inputPanel);
+
+    // 검색 패널 추가
+    JPanel searchPanel = searchPanel();
+    searchPanel.setBounds(15, 400, 655, 50);
+    mainPanel.add(searchPanel);
+
+    // 센터 패널 추가
+    
+    JPanel centerPanel = centerPanel();
+    centerPanel.setBounds(15, 450, 655, 230);
+    mainPanel.add(centerPanel);
+
+    // 하단 패널 추가
+    JPanel southPanel = southPanel(buttonInterface);
+    southPanel.setBounds(150, 690, 400, 50);
+    mainPanel.add(southPanel);
+
+
+    return mainPanel;
         
-        
-        // 상단 패널
+    }
+    
+    private JPanel createInputPanel(){
         JPanel input_panel = new JPanel();
         input_panel.setBorder(new TitledBorder(new LineBorder(Color.gray,1),"입력"));
         input_panel.setLayout(new GridLayout(4,4,10,15));
@@ -235,15 +266,17 @@ public class AirplaneBS extends JPanel {
             
         });
         
-        input_panel.setBounds(15,75,655,300);
-        add(input_panel);
+
         
+        return input_panel;
+    }
+    
+    private JPanel searchPanel(){
         
-        // 검색 패널 //
         JPanel search_panel = new JPanel();
         
         // 콤보 박스
-        String [] search = {"항공사"};
+        String [] search = {"전체 조회","항공사"};
         search_combo = new JComboBox(search);
         search_panel.add(search_combo);
         
@@ -255,15 +288,15 @@ public class AirplaneBS extends JPanel {
         searchBT = new JButton("조회");
         search_panel.add(searchBT);
         
-        
-        search_panel.setBounds(15,400,655,50);
-        add(search_panel);
-        
-        
-        // 센터 패널 //
+        return search_panel;
+   
+    }
+    
+    private JPanel centerPanel(){
+
         JPanel airplane_center_panel = new JPanel(new BorderLayout());
  
-        String header[] = {"비즈니스 넘버", "항공사","출발지역","도착지역","좌석타입","왕복/편도","항공 비용","등록 여부"};
+        String header[] = {"비즈니스 넘버","사업자 유저넘버", "항공사","출발지역","도착지역","좌석타입","왕복/편도","항공 비용","등록 여부"};
         String contents[][]={};
         
         airplane_model = new DefaultTableModel(contents, header);
@@ -271,46 +304,34 @@ public class AirplaneBS extends JPanel {
         airplane_scrollpane = new JScrollPane(airplane_table);
         airplane_center_panel.add(airplane_scrollpane, BorderLayout.CENTER);
 
-        airplane_center_panel.setBounds(15,450,655,230);
-        add(airplane_center_panel);
+        return airplane_center_panel;
+        
+    }
+    
+    private JPanel southPanel(ButtonInterface buttonInterface){
         
         
-        // 하단 패널 //
+        
         JPanel south_panel = new JPanel();
         south_panel.setLayout(new FlowLayout(FlowLayout.CENTER, 15, 5));
        
+        
+        
         JButton backBT = new JButton("이전");
+        JButton searchBT = new JButton("검색");
         JButton modifyBT = new JButton("수정");
         JButton addBT = new JButton("추가");
         JButton deleteBT = new JButton("삭제");
         JButton okBT = new JButton("확인");
         
         south_panel.add(backBT);
+        south_panel.add(searchBT);
         south_panel.add(modifyBT);
         south_panel.add(addBT);
         south_panel.add(deleteBT);
         south_panel.add(okBT);
         
-        
-        south_panel.setBounds(150,690,400,50);
-        add(south_panel);
-        
-        
-        backBT.addActionListener(new ActionListener(){ // 추가 버튼 눌렀을 때
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                back(airplane_table);
-            }
-            
-        });
-
-        addBT.addActionListener(new ActionListener(){ // 추가 버튼 눌렀을 때
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                add(airplane_table);
-            }
-            
-        });
+        backBT.addActionListener(e->buttonInterface.onBack());
         
         searchBT.addActionListener(new ActionListener(){ // 조회 버튼 눌렀을 때
             @Override
@@ -319,13 +340,25 @@ public class AirplaneBS extends JPanel {
             }
         });
         
+        
         modifyBT.addActionListener(new ActionListener(){ // 수정버튼 눌렀을 때
             @Override
             public void actionPerformed(ActionEvent e) {
                 modify(airplane_table);
             }
         });
-         
+        
+        
+        addBT.addActionListener(new ActionListener(){ // 추가 버튼 눌렀을 때
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                add(airplane_table);
+            }
+            
+        });
+        
+        
+        
         
         deleteBT.addActionListener(new ActionListener(){ // 삭제 버튼 눌렀을 때
             @Override
@@ -335,16 +368,12 @@ public class AirplaneBS extends JPanel {
             
         });
         
-        okBT.addActionListener(new ActionListener(){ // 확인 버튼 눌렀을 때
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ok(airplane_table);
-            }
-            
-        });
-   
+        okBT.addActionListener(e->buttonInterface.onOk());
         
+        return south_panel;
     }
+    
+    
     
     private void add(JTable airplane_table)
     {
@@ -370,14 +399,34 @@ public class AirplaneBS extends JPanel {
             
             airplane_model = (DefaultTableModel) airplane_table.getModel();
             
-            int rowcount = airplane_model.getRowCount() + 1;
-            String type = "B";
+            int rowcount;
+            try (BufferedReader reader = new BufferedReader(new FileReader("airplane_business_textfile.txt"))) {
+                rowcount = (int) reader.lines().count() + 1;
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "파일 읽기 오류.", "오류", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            String type = "A";
             String bs_num = type + rowcount;
+            
+            String bs_user_num = "";
+            try (BufferedReader reader = new BufferedReader(new FileReader("File/BSLogin.txt"))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    bs_user_num = line;
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "파일 읽기 오류.", "오류", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             
             
             
             airplane_model.addRow(new Object[]{
                 bs_num,
+                bs_user_num,
                 airline_text,
                 departure_area_text,
                 arrival_area_text,
@@ -387,7 +436,7 @@ public class AirplaneBS extends JPanel {
                 airplane_register_text
             });
             
-            String data = bs_num + "|" + airline_text +"|" + departure_area_text +"|" + arrival_area_text +"|" + seat_type_text  +"|" + route  +"|" + airplane_cost_text +"|" + airplane_register_text;
+            String data = bs_num + "|" + bs_user_num + "|"+ airline_text +"|" + departure_area_text +"|" + arrival_area_text +"|" + seat_type_text  +"|" + route  +"|" + airplane_cost_text +"|" + airplane_register_text;
             
             BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
             writer.write(data+"\n");
@@ -401,44 +450,42 @@ public class AirplaneBS extends JPanel {
         }
     }
     
-    
-    private void back(JTable airplane_table){
-        JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        if (topFrame != null) {
-            topFrame.dispose();
-        }
-
-        Login click = new Login();
-        click.setVisible(true);
-    }
-    
     private void search(JTable airplane_table){
         
         search_combo_text = (String)search_combo.getSelectedItem();
         text = search_text.getText();
         
+     
+        String bs_user_num = "";
+        try (BufferedReader reader = new BufferedReader(new FileReader("File/BSLogin.txt"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                bs_user_num = line;
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "파일 읽기 오류.", "오류", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        
+        
+        
         try{
             
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
             String line;
-            DefaultTableModel model = (DefaultTableModel) airplane_table.getModel();
-            model.setRowCount(0); // 테이블 초기화
+            airplane_model = (DefaultTableModel) airplane_table.getModel();
+            airplane_model.setRowCount(0); // 테이블 초기화
                     
             while ((line = reader.readLine()) != null) {
                 String[] data = line.split("\\|");
-                if (search_combo_text == null) { // 검색 콤보 상자가 선택되지 않았을 경우 전체 조회로 처리
-                    model.addRow(data);
-                }
-                else if(search_combo_text.equals("전체 조회")){
-                    model.addRow(data);
-                }
-                else if (search_combo_text.equals("비즈니스 넘버") && data[0].equals(text)) {
-                    model.addRow(data); 
-                }
-                else if (search_combo_text.equals("호텔 이름") && data[1].equals(text)) {
-                    model.addRow(data);
+                if (search_combo_text.equals("전체 조회") ||
+                    (search_combo_text.equals("항공사") && data[2].equals(text))) {
+                    airplane_model.addRow(data);
                 }
             }
+               
             
             reader.close();
         }
@@ -511,18 +558,20 @@ public class AirplaneBS extends JPanel {
         }
         
     }
-    
-    private void ok(JTable airplane_table){
-        JOptionPane.showMessageDialog(this, "완료되었습니다.", "알림", JOptionPane.ERROR_MESSAGE);
-        Window window = SwingUtilities.getWindowAncestor(this);
-        window.dispose();
+
+    @Override
+    public void onOk() {
+        ButtonHandler buttonhandler = new ButtonHandler();
+        buttonhandler.onOk();
     }
 
-
-
- 
+    @Override
+    public void onBack() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
     
-    
+  
+
     
     
 }

@@ -3,18 +3,24 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package buisness_package;
-import HotelBS_package.HotelBS;
-import CarBS_package.CarBS;
 import AirplaneBS_package.AirplaneBS;
+import CarBS_package.CarBS;
+import HotelBS_package.HotelBS;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
+import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
 /**
  *
  * @author mskim
  */
-public class Business_Choice extends JFrame{
+public class Business_Choice extends JFrame {
+    
+    private BusinessInterface business;
+    private ButtonInterface buttonInterface;
+    
+    
     public Business_Choice(){
         super("사업자 관리");
         setSize(700,800);
@@ -24,16 +30,21 @@ public class Business_Choice extends JFrame{
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setVisible(true);
+        
     }
     
     void menu(){
         JMenuBar mb = new JMenuBar(); // 메뉴바 생성
         JMenu screenmenu = new JMenu("사업자 유형");
         
-        
+
         JMenuItem hotel_menuItem;
         JMenuItem airplane_menuItem;
         JMenuItem car_menuItem;
+        
+        setButtonInterface(new ButtonHandler()); 
+        
+        
         
         ImageIcon hotelIcon = new ImageIcon("hotel.png");
         hotel_menuItem = new JMenuItem("호텔");
@@ -42,10 +53,10 @@ public class Business_Choice extends JFrame{
         hotel_menuItem.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
-                getContentPane().removeAll(); // 기존 패널 삭제
-                getContentPane().add(new HotelBS()); // 호텔 사업자 패널 뜨도록 하기
-                revalidate(); // 변경사항 적용
-                repaint();
+                setBusiness(new HotelBS());
+                business = new HotelBS();
+                update();
+                
             }
         });
         
@@ -57,10 +68,9 @@ public class Business_Choice extends JFrame{
         airplane_menuItem.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
-                getContentPane().removeAll(); // 기존 패널 삭제
-                getContentPane().add(new AirplaneBS()); // 항공 사업자 패널 뜨도록 하기
-                revalidate(); // 변경사항 적용
-                repaint();
+                setBusiness(new AirplaneBS());
+                business = new AirplaneBS();
+                update();
             }
         });
         
@@ -72,10 +82,9 @@ public class Business_Choice extends JFrame{
         car_menuItem.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
-                getContentPane().removeAll(); // 기존 패널 삭제
-                getContentPane().add(new CarBS()); // 항공 사업자 패널 뜨도록 하기
-                revalidate(); // 변경사항 적용
-                repaint();
+                setBusiness(new CarBS());
+                business = new CarBS();
+                update();
             }
         });
       
@@ -83,8 +92,28 @@ public class Business_Choice extends JFrame{
         
         mb.add(screenmenu);
         setJMenuBar(mb);
-         
+
+
+
         
+    }
+    
+ 
+   void update(){
+       
+        getContentPane().removeAll(); // 기존 패널 삭제
+        getContentPane().add(business.createPanel(buttonInterface));
+        revalidate(); // 변경사항 적용
+        repaint();
+       
+   }
+   
+   public void setButtonInterface(ButtonInterface buttonInterface) {
+        this.buttonInterface = buttonInterface;
+    }
+    
+    public void setBusiness(BusinessInterface business) {
+        this.business = business;
     }
  
 }

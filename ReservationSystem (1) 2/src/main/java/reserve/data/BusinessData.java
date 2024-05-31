@@ -11,20 +11,23 @@ package reserve.data;
  */
 
 public class BusinessData {
+    
     private String ID;        // 아이디
     private String PW;        // 비밀번호
     private String name;      // 이름
     private String TM;        // 상호명
     private String Bno;       // 사업자번호
     private String no;        // 전화번호
+    private int index;
     
-    public BusinessData(String ID, String PW, String name,  String TM, String Bno, String no){
+    public BusinessData(String ID, String PW, String name,  String TM, String Bno, String no, int index){
         this.ID = ID;
         this.PW = PW;
         this.name = name;
         this.TM = TM;
         this.Bno = Bno;
         this.no = no;
+        this.index = index;
     }
     
     public String getID() {
@@ -73,5 +76,9 @@ public class BusinessData {
 
     public void setno(String no) {
         this.no = no;
+    }
+    
+    public int getIndex(){
+        return index;
     }
 }

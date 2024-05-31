@@ -4,18 +4,21 @@
  */
 
 package HotelBS_package;
+import buisness_package.BusinessInterface;
+import buisness_package.ButtonHandler;
+import buisness_package.ButtonInterface;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FileDialog;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -24,14 +27,13 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
-import reserve.login.Login;
 
 
 /**
  *
  * @author mskim
  */
-public class HotelBS extends JPanel{
+public class HotelBS extends JPanel implements BusinessInterface,ButtonInterface{
     
     
     private HotelBS_information hotelInfo; // HotelBS_information 클래스의 인스턴스 생성
@@ -119,21 +121,52 @@ public class HotelBS extends JPanel{
        caretaker = new HotelCaretaker();
         
         
-        hotel_list();
+  
     }
     
-    private void hotel_list(){
+    @Override
+    public JPanel createPanel(ButtonInterface buttonInterface) {
         
-        setLayout(null);
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(null);
         
-        // 이미지를 표시할 JLabel
+         // 이미지를 표시할 JLabel
         JLabel hotel_image_label = new JLabel();
         ImageIcon hotel_list_Icon = new ImageIcon("hotel_list.png");
         hotel_image_label.setIcon(hotel_list_Icon);
         hotel_image_label.setBounds(18,1,80,80);
-        add(hotel_image_label);
+        mainPanel.add(hotel_image_label);
+        
+        // 입력 패널 추가
+        JPanel inputPanel = InputPanel();
+        inputPanel.setBounds(15, 75, 655, 300);
+        mainPanel.add(inputPanel);
+        
+        // 검색 패널 추가
+        JPanel searchPanel = searchPanel();
+        searchPanel.setBounds(15, 400, 655, 50);
+        mainPanel.add(searchPanel);
+
+        // 센터 패널 추가
+    
+        JPanel centerPanel = centerPanel();
+        centerPanel.setBounds(15, 450, 655, 230);
+        mainPanel.add(centerPanel);
+
+        // 하단 패널 추가
+        JPanel southPanel = southPanel(buttonInterface);
+        southPanel.setBounds(150, 690, 400, 50);
+        mainPanel.add(southPanel);
+
+
+        return mainPanel;
         
     
+    
+        }
+    
+    private JPanel InputPanel(){
+        
         // 상단 패널 //
         JPanel input_panel = new JPanel();
         input_panel.setBorder(new TitledBorder(new LineBorder(Color.gray,1),"입력"));
@@ -271,17 +304,17 @@ public class HotelBS extends JPanel{
             
         });
         
-       
-        input_panel.setBounds(15,75,655,300);
-        add(input_panel);
-       
-       
+       return input_panel;
+    }
+    
+    private JPanel searchPanel(){
+        
         // 검색 패널 //
 
         JPanel search_panel = new JPanel();
       
         // 콤보 박스
-        String [] search = {"전체 조회","비즈니스 넘버", "호텔 이름"};
+        String [] search = {"전체 조회","호텔 이름"};
         search_combo = new JComboBox(search);
         search_panel.add(search_combo);
         
@@ -293,50 +326,63 @@ public class HotelBS extends JPanel{
         JButton searchBT = new JButton("조회");
         search_panel.add(searchBT);
         
+        return search_panel;
+    }
+    
+    private JPanel centerPanel(){
         
-        
-        
-        search_panel.setBounds(15,400,655,50);
-        add(search_panel);
-
-
-       
         // 센터 패널 //
         JPanel hotel_list_panel = new JPanel(new BorderLayout());
-        String header[] = {"비즈니스 넘버", "호텔 이름", "지역", "상세 주소","투숙객 수", "조식 여부", "룸 타입", "숙박 비용","등록 여부"};
+        String header[] = {"비즈니스 넘버", "사업자 유저넘버", "호텔 이름", "지역", "상세 주소","투숙객 수", "조식 여부", "룸 타입", "숙박 비용","등록 여부"};
         String contents[][]={};
         
         hotel_model = new DefaultTableModel(contents, header);
         hotel_table = new JTable(hotel_model);
         hotel_scrollpane = new JScrollPane(hotel_table);
         hotel_list_panel.add(hotel_scrollpane, BorderLayout.CENTER);
-
-        hotel_list_panel.setBounds(15,450,655,230);
-        add(hotel_list_panel);
-       
-       
+        
+        return hotel_list_panel;
+    }
+    
+    private JPanel southPanel(ButtonInterface buttonInterface){
         // 하단 패널
         JPanel south_panel = new JPanel();
-        south_panel.setLayout(new FlowLayout(FlowLayout.CENTER, 7, 3));
+        south_panel.setLayout(new FlowLayout(FlowLayout.CENTER, 7, 2));
        
         JButton backBT = new JButton("이전");
+        JButton searchBT = new JButton("검색");
         JButton modifyBT = new JButton("수정");
         JButton addBT = new JButton("추가");
         JButton deleteBT = new JButton("삭제");
+        JButton okBT = new JButton("확인");
         JButton undoBT = new JButton("복구");
         
+        
         south_panel.add(backBT);
+        south_panel.add(searchBT);
         south_panel.add(modifyBT);
         south_panel.add(addBT);
+        south_panel.add(deleteBT);
+        south_panel.add(okBT);
         south_panel.add(undoBT);
         
-        backBT.addActionListener(new ActionListener(){ // 추가 버튼 눌렀을 때
+        
+        backBT.addActionListener(e->buttonInterface.onBack());
+        
+        searchBT.addActionListener(new ActionListener(){ // 조회 버튼 눌렀을 때
             @Override
             public void actionPerformed(ActionEvent e) {
-                back(hotel_table);
+                search(hotel_table);
             }
-            
         });
+        
+        modifyBT.addActionListener(new ActionListener(){ // 수정버튼 눌렀을 때
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                modify(hotel_table);
+            }
+        });
+        
         
         addBT.addActionListener(new ActionListener(){ // 추가 버튼 눌렀을 때
             @Override
@@ -346,20 +392,8 @@ public class HotelBS extends JPanel{
             
         });
         
-        searchBT.addActionListener(new ActionListener(){ // 조회 버튼 눌렀을 때
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                search(hotel_table);
-            }
-        });
         
         
-        modifyBT.addActionListener(new ActionListener(){ // 수정버튼 눌렀을 때
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                modify(hotel_table);
-            }
-        });
         
         deleteBT.addActionListener(new ActionListener(){ // 삭제 버튼 눌렀을 때
             @Override
@@ -370,8 +404,6 @@ public class HotelBS extends JPanel{
         });
        
             
-
-        
         undoBT.addActionListener(new ActionListener(){ //  복원 버튼 눌렀을 때
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -379,25 +411,10 @@ public class HotelBS extends JPanel{
             }
             
         });
-            
-        south_panel.add(deleteBT);
-        //south_panel.add(okBT);
-       
-        south_panel.setBounds(150,690,400,50);
-        add(south_panel);
-    }
-    
-    private void back(JTable hotel_table){
         
+        okBT.addActionListener(e->buttonInterface.onOk());
         
-        JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        if (topFrame != null) {
-            topFrame.dispose();
-        }
-
-        Login click = new Login();
-        click.setVisible(true);
-
+        return south_panel;
     }
     
     
@@ -429,15 +446,36 @@ public class HotelBS extends JPanel{
             }
             
             hotel_model = (DefaultTableModel) hotel_table.getModel();
+            String type = "H";
+            try (BufferedReader reader = new BufferedReader(new FileReader("hotel_business_textfile.txt"))) {
+                lineCount = (int) reader.lines().count() + 1;
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "파일 읽기 오류.", "오류", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            String bs_num = type + lineCount;
             
-            int rowcount = hotel_model.getRowCount() + 1;
-            String type = "B";
-            String bs_num = type + rowcount;
+            String bs_user_num = "";
+            try (BufferedReader reader = new BufferedReader(new FileReader("File/BSLogin.txt"))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    bs_user_num = line;
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "파일 읽기 오류.", "오류", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             
-            hotel_model.addRow(new Object[]{bs_num, hotel_name_text, hotelarea_text, detaild_address_text, guestnum_text, breakfast, roomtype, hotel_cost_text, hotel_register_text});
+            
+            
+            hotel_model.addRow(new Object[]{bs_num,
+                bs_user_num,
+                hotel_name_text, hotelarea_text, detaild_address_text, guestnum_text, breakfast, roomtype, hotel_cost_text, hotel_register_text});
 
 
-            String data = bs_num + "|" + hotel_name_text + "|" + hotelarea_text + "|" + detaild_address_text + "|" + guestnum_text + "|" + breakfast + "|" + roomtype + "|" + hotel_cost_text + "|" + hotel_register_text;
+            String data = bs_num + "|" + bs_user_num + "|"+ hotel_name_text + "|" + hotelarea_text + "|" + detaild_address_text + "|" + guestnum_text + "|" + breakfast + "|" + roomtype + "|" + hotel_cost_text + "|" + hotel_register_text;
 
             // 파일에 데이터 추가하기
             BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
@@ -574,15 +612,6 @@ public class HotelBS extends JPanel{
        
     }
     
-
-    
-    private void ok(JTable hotel_table){
-        
-       // OkBT 클래스 호출
-    }
-
-
-    
     
     
     private void undo(HotelCaretaker caretaker, JTable hotel_table){ // 복구 메서드
@@ -605,7 +634,25 @@ public class HotelBS extends JPanel{
  
     }
 
+    
+
+    @Override
+    public void onOk() {
+        ButtonHandler buttonhandler = new ButtonHandler();
+        buttonhandler.onOk();
+    }
+
+    @Override
+    public void onBack() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
    
+
+  
+
+
+    
    
 
 }

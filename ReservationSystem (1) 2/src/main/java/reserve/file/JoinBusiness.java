@@ -48,7 +48,7 @@ public static JoinBusiness getInstance(){
 
 private String line;
 private String BusinessFile = "File/BusinessInfo.txt";
-private int index = 0;
+private int index;
 
     @Override
     public void fRead() {
@@ -88,7 +88,8 @@ private int index = 0;
         for(int i = 0 ; i <readInfo.size(); i ++){
             line  = readInfo.get(i);
             String[] str = line.split("\\|"); 
-            businessInfo.add(new BusinessData(str[0], str[1], str[2], str[3], str[4], str[5]));
+            int index = i+1;
+            businessInfo.add(new BusinessData(str[0], str[1], str[2], str[3], str[4], str[5], index));
         }
     }
     
@@ -104,10 +105,23 @@ private int index = 0;
         
         for (BusinessData business : businessInfo) {
             if(business.getID().equals(ID) && business.getPW().equals(PW)){
+                saveBSLogin("B", business.getIndex());
                 return true;
             }
         }
          return false;
+    }
+    
+    private void saveBSLogin(String Type,int index) {
+        String loginInfoFile = "File/BSLogin.txt";
+        String input= Type + index;
+        try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(loginInfoFile, true), "UTF-8"))) {
+            bw.write(input);
+            bw.newLine();
+            bw.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
