@@ -22,6 +22,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -70,6 +72,7 @@ public class AirplaneBS extends JPanel implements BusinessInterface,ButtonInterf
     private JTable airplane_table;
     private JScrollPane airplane_scrollpane;
     private int column;
+    private int lineCount;
     
     
     
@@ -396,17 +399,20 @@ public class AirplaneBS extends JPanel implements BusinessInterface,ButtonInterf
             }
             
             airplane_model = (DefaultTableModel) airplane_table.getModel();
-            
-            int rowcount;
-            try (BufferedReader reader = new BufferedReader(new FileReader("airplane_business_textfile.txt"))) {
-                rowcount = (int) reader.lines().count() + 1;
+            String type = "A";
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                if (reader.readLine() == null) {
+                    lineCount = 1; // 파일이 비어 있는 경우 lineCount를 1로 초기화
+                } else {
+                    lineCount = (int) reader.lines().count() + 1; // 파일에 데이터가 있는 경우 현재 라인 수 + 1
+                }
             } catch (IOException ex) {
                 ex.printStackTrace();
                 JOptionPane.showMessageDialog(this, "파일 읽기 오류.", "오류", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            String type = "A";
-            String bs_num = type + rowcount;
+
+            String bs_num = type + lineCount;
             
             String bs_user_num = "";
             try (BufferedReader reader = new BufferedReader(new FileReader("File/BSLogin.txt"))) {
@@ -434,10 +440,8 @@ public class AirplaneBS extends JPanel implements BusinessInterface,ButtonInterf
                 airplane_register_text
             });
             
-            String data = bs_num + "|" + bs_user_num + "|"+ airline_text +"|" + departure_area_text +"|" + arrival_area_text +"|" + seat_type_text  +"|" + route  +"|" + airplane_cost_text +"|" + airplane_register_text;
-            
             BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
-            writer.write(data+"\n");
+            writer.write(bs_num + "|" + bs_user_num + "|"+ airline_text +"|" + departure_area_text +"|" + arrival_area_text +"|" + seat_type_text  +"|" + route  +"|" + airplane_cost_text +"|" + airplane_register_text + "\n");
             writer.close();
             
             
@@ -456,16 +460,19 @@ public class AirplaneBS extends JPanel implements BusinessInterface,ButtonInterf
         // 파일에서 항공사 정보 읽어오기
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
-            DefaultTableModel airplane_model = (DefaultTableModel) airplane_table.getModel();
+            airplane_model = (DefaultTableModel) airplane_table.getModel();
             airplane_model.setRowCount(0); // 테이블 초기화
+            
         
             while ((line = reader.readLine()) != null) {
                 String[] data = line.split("\\|");
                 if (search_combo_text.equals("전체 조회") || 
-                    (search_combo_text.equals("항공사") && data.length >= 3 && data[2].equals(text))) {
+                    (search_combo_text.equals("항공사") || data.length >= 3 && data[2].equals(text))) {
                     airplane_model.addRow(data);
+                    
                 }
             }
+           
         } catch (IOException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "파일 읽기 오류.", "오류", JOptionPane.ERROR_MESSAGE);
@@ -485,9 +492,13 @@ public class AirplaneBS extends JPanel implements BusinessInterface,ButtonInterf
             new_route = "편도";
         }
         
-        
-        
         if(row!=-1){
+            
+            airplane_model = (DefaultTableModel) airplane_table.getModel();
+            
+            String bs_num = (String) airplane_model.getValueAt(row, 0);
+            String bs_user_num = (String) airplane_model.getValueAt(row, 1);
+            
             String[] new_airplane_input = {
                 (String)airline.getSelectedItem(),
                 (String)departure_area.getSelectedItem(),
@@ -498,43 +509,70 @@ public class AirplaneBS extends JPanel implements BusinessInterface,ButtonInterf
                 airplane_register.getText()
             };
             
-            DefaultTableModel model = (DefaultTableModel) airplane_table.getModel();
-            for(int i=0; i<new_airplane_input.length; i++){
-                if(new_airplane_input[i].isEmpty()){ // 수정된 정보가 없으면
-                    new_airplane_input[i] = (String) airplane_model.getValueAt(row,i+1); // 현재 값을 유지 (get을 쓴거임)
+            
+            for (int i = 0; i < new_airplane_input.length; i++) {
+                if (new_airplane_input[i] == null || new_airplane_input[i].isEmpty()) { // 수정된 정보가 없으면
+                    new_airplane_input[i] = (String) airplane_model.getValueAt(row, i + 2); // 현재 값을 유지
                 }
-                airplane_model.setValueAt(new_airplane_input[i],row,i+1); 
+                airplane_model.setValueAt(new_airplane_input[i], row, i + 2);
             }
             
+            airplane_model.setValueAt(bs_num, row, 0);
+            airplane_model.setValueAt(bs_user_num, row, 1);
+            
+            // 파일에 저장
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                for (int i = 0; i < airplane_model.getRowCount(); i++) {
+                    StringBuilder row_data = new StringBuilder();
+                    for (int j = 0; j < airplane_model.getColumnCount(); j++) {
+                        Object value = airplane_model.getValueAt(i, j);
+                        row_data.append(value != null ? value.toString() : "");
+                        if (j < airplane_model.getColumnCount() - 1) {
+                            row_data.append("|");
+                        }
+                    }
+                    writer.write(row_data.toString() + "\n");
+
+                    writer.newLine();
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(null, "파일 저장 중 오류가 발생했습니다.", "오류", JOptionPane.ERROR_MESSAGE);
+            }
         }
-        
-        
     }
     
-    private void delete(JTable airplane_table){
+    private void delete(JTable airplane_table) {
         
-        int row = airplane_table.getSelectedRow();
-        
+        row = airplane_table.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(null, "삭제할 행을 선택하세요.", "오류", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+    
         airplane_model = (DefaultTableModel) airplane_table.getModel();
-        
-        column = airplane_model.getColumnCount();
-        String[] row_data = new String[column];
-        for(int i=0; i<column; i++){
-             Object value = airplane_model.getValueAt(row, i);
-             if(value!=null){
-                 row_data[i] = value.toString(); // 타입변환
-             }
-             else{
-                 row_data[i] = "";
-             }
-        }
-        
         airplane_model.removeRow(row);
-        
-        for(int i=row; i<airplane_model.getRowCount(); i++){
-            airplane_model.setValueAt(i+1, i, 0);
+    
+      
+        for (int i = 0; i < airplane_model.getRowCount(); i++) {
+            airplane_model.setValueAt("A" + (i + 1), i, 0);
         }
         
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            for (int i = 0; i < airplane_model.getRowCount(); i++) {
+                List<String> row_data = new ArrayList<>();
+                for (int j = 0; j < airplane_model.getColumnCount(); j++) {
+                    row_data.add(airplane_model.getValueAt(i, j).toString());
+                }
+                writer.write(String.join("|", row_data));
+                writer.newLine();
+            }
+        }
+        
+        catch (IOException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "오류가 발생했습니다.", "오류", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     @Override

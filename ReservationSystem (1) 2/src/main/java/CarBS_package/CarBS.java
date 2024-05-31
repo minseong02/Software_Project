@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -385,9 +387,8 @@ public class CarBS extends JPanel implements BusinessInterface,ButtonInterface{
     
 
     private void add(JTable car_table){
+        
         try{
-            
-
             
             String car_company_text = car_company.getText();
             String rental_time_text =(String) rental_time.getSelectedItem();
@@ -414,26 +415,33 @@ public class CarBS extends JPanel implements BusinessInterface,ButtonInterface{
             
             String car_registration = register.getText();
             
+            
             if (car_company_text.isEmpty() || rental_time_text.isEmpty() || car_cost_text.isEmpty() || vehicle_type_text.isEmpty() || oil.isEmpty() || high_pass.isEmpty() || car_registration.isEmpty()){
                 JOptionPane.showMessageDialog(this, "모든 필드를 입력하세요.", "오류", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            
+            lineCount=0;
             car_model = (DefaultTableModel) car_table.getModel();
+            String type = "C";
             
-            try (BufferedReader reader = new BufferedReader(new FileReader("car_business_textfile.txt"))) {
-                lineCount = (int) reader.lines().count() + 1;
-            } catch (IOException ex) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                if (reader.readLine() == null) {
+                lineCount = 1; // 파일이 비어 있는 경우 lineCount를 1로 초기화
+                }
+                else {
+                    lineCount = (int) reader.lines().count() + 1; // 파일에 데이터가 있는 경우 현재 라인 수 + 1
+                }
+            }catch (IOException ex) {
                 ex.printStackTrace();
                 JOptionPane.showMessageDialog(this, "파일 읽기 오류.", "오류", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             
-            String type = "C";
+            
             String bs_num = type+lineCount;
             
-            
             String bs_user_num = "";
+            
             try (BufferedReader reader = new BufferedReader(new FileReader("File/BSLogin.txt"))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
@@ -450,41 +458,40 @@ public class CarBS extends JPanel implements BusinessInterface,ButtonInterface{
             car_model.addRow(new Object[]{bs_num, bs_user_num ,car_company_text,rental_time_text,car_cost_text,vehicle_type_text,oil,high_pass,car_registration});
             
             
-            data = bs_num + "|" + bs_user_num + "|" + car_company_text + "|" + rental_time_text + "|" +car_cost_text + "|" + vehicle_type_text + "|" + oil + "|" + high_pass + "|" + car_registration;
                    
             // 파일에 데이터 추가하기
             BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
-            writer.write(data+"\n");
+            writer.write(bs_num + "|" + bs_user_num + "|" + car_company_text + "|" + rental_time_text + "|" +car_cost_text + "|" + vehicle_type_text + "|" + oil + "|" + high_pass + "|" + car_registration+"\n");
             writer.close();
             
-            
-            
-            
-
             
         } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
     
-    private void search(JTable airplane_table){
+    private void search(JTable car_table){
+        
         // 사용자가 선택한 검색 기준과 입력한 텍스트 가져오기
         search_combo_text = (String)search_combo.getSelectedItem();
         text = search_text.getText();
     
-        // 파일에서 항공사 정보 읽어오기
+        
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
-            DefaultTableModel airplane_model = (DefaultTableModel) airplane_table.getModel();
-            airplane_model.setRowCount(0); // 테이블 초기화
+            car_model = (DefaultTableModel) car_table.getModel();
+            car_model.setRowCount(0); // 테이블 초기화
+            
         
             while ((line = reader.readLine()) != null) {
                 String[] data = line.split("\\|");
                 if (search_combo_text.equals("전체 조회") || 
                     (search_combo_text.equals("자동차 회사") && data.length >= 3 && data[2].equals(text))) {
-                    airplane_model.addRow(data);
+                    car_model.addRow(data);
+                    
                 }
             }
+            
         } catch (IOException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "파일 읽기 오류.", "오류", JOptionPane.ERROR_MESSAGE);
@@ -493,34 +500,113 @@ public class CarBS extends JPanel implements BusinessInterface,ButtonInterface{
     
     
     private void modify(JTable car_table){
-        /*
+  
         
         row = car_table.getSelectedRow();
         
-        if(row!=-1){
-            String[]
+        String new_oil="";
+        if(gasoline.isSelected()){
+            new_oil = "휘발유";
         }
-             
+        else if(diesel.isSelected()){
+            new_oil = "경유";
+        }
+        else if(electricity.isSelected()){
+            new_oil = "전기";
+        }
         
+        String new_high_pass="";
+        if(high_pass_yes.isSelected()){
+            new_high_pass = "O";
+        }
+        else if(high_pass_no.isSelected()){
+            new_high_pass = "X";
+        }
         
-
-                */
-        
-
+        if(row!=-1){
+            
+            car_model = (DefaultTableModel) car_table.getModel();
+            
+            String bs_num = (String) car_model.getValueAt(row, 0);
+            String bs_user_num = (String) car_model.getValueAt(row, 1);
+            
+            
+            String[] new_car_input = {
+                car_company.getText(),
+                (String)rental_time.getSelectedItem(),
+                car_cost.getText(),
+                (String)vehicle_type.getSelectedItem(),
+                new_oil,
+                new_high_pass,
+                register.getText()
+            };
+            
+            
+            for (int i = 0; i < new_car_input.length; i++) {
+                if (new_car_input[i] == null || new_car_input[i].isEmpty()) { // 수정된 정보가 없으면
+                    new_car_input[i] = (String) car_model.getValueAt(row, i + 2); // 현재 값을 유지
+                }
+                car_model.setValueAt(new_car_input[i], row, i + 2);
+            }
+            
+            car_model.setValueAt(bs_num, row, 0);
+            car_model.setValueAt(bs_user_num, row, 1);
+            
+            // 파일에 저장
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                for (int i = 0; i < car_model.getRowCount(); i++) {
+                    StringBuilder row_data = new StringBuilder();
+                    for (int j = 0; j < car_model.getColumnCount(); j++) {
+                        Object value = car_model.getValueAt(i, j);
+                        row_data.append(value != null ? value.toString() : "");
+                        if (j < car_model.getColumnCount() - 1) {
+                            row_data.append("|");
+                        }
+                    }
+                    writer.write(row_data.toString() + "\n");
+                    writer.newLine();
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(null, "파일 저장 중 오류가 발생했습니다.", "오류", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }
     
     private void delete(JTable car_table){
-        row=car_table.getSelectedRow();
-        car_model.removeRow(row);
         
-        for(int i=row; i<car_model.getRowCount(); i++){
-            car_model.setValueAt(i+1, i, 0);
+        row=car_table.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(null, "삭제할 행을 선택하세요.", "오류", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+    
+        car_model = (DefaultTableModel) car_table.getModel();
+        car_model.removeRow(row);
+    
+      
+        for (int i = 0; i < car_model.getRowCount(); i++) {
+            car_model.setValueAt("A" + (i + 1), i, 0);
+        }
+        
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            for (int i = 0; i < car_model.getRowCount(); i++) {
+                List<String> row_data = new ArrayList<>();
+                for (int j = 0; j < car_model.getColumnCount(); j++) {
+                    row_data.add(car_model.getValueAt(i, j).toString());
+                }
+                writer.write(String.join("|", row_data));
+                writer.newLine();
+            }
+        }
+        
+        catch (IOException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "오류가 발생했습니다.", "오류", JOptionPane.ERROR_MESSAGE);
         }
 
     }
    
-
-    
             
 
     @Override

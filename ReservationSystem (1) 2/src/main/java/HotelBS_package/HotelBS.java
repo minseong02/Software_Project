@@ -17,17 +17,14 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
-import reserve.login.Login;
 
 
 /**
@@ -420,9 +417,7 @@ public class HotelBS extends JPanel implements BusinessInterface,ButtonInterface
     
     private void add(JTable hotel_table){
         
-      
-        try {
-            
+        try{
             String hotel_name_text = hotel_name.getText();
             String hotelarea_text =(String) hotel_area.getSelectedItem();
             String detaild_address_text = detailed_address.getText();
@@ -447,9 +442,14 @@ public class HotelBS extends JPanel implements BusinessInterface,ButtonInterface
             
             hotel_model = (DefaultTableModel) hotel_table.getModel();
             String type = "H";
-            try (BufferedReader reader = new BufferedReader(new FileReader("hotel_business_textfile.txt"))) {
-                lineCount = (int) reader.lines().count() + 1;
-            } catch (IOException ex) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                if (reader.readLine() == null) {
+                lineCount = 1; // 파일이 비어 있는 경우 lineCount를 1로 초기화
+                }
+                else {
+                    lineCount = (int) reader.lines().count() + 1; // 파일에 데이터가 있는 경우 현재 라인 수 + 1
+                }
+            }catch (IOException ex) {
                 ex.printStackTrace();
                 JOptionPane.showMessageDialog(this, "파일 읽기 오류.", "오류", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -461,6 +461,7 @@ public class HotelBS extends JPanel implements BusinessInterface,ButtonInterface
                 String line;
                 while ((line = reader.readLine()) != null) {
                     bs_user_num = line;
+
                 }
             } catch (IOException ex) {
                 ex.printStackTrace();
@@ -472,17 +473,19 @@ public class HotelBS extends JPanel implements BusinessInterface,ButtonInterface
             
             hotel_model.addRow(new Object[]{bs_num,
                 bs_user_num,
-                hotel_name_text, hotelarea_text, detaild_address_text, guestnum_text, breakfast, roomtype, hotel_cost_text, hotel_register_text});
+                hotel_name_text,
+                hotelarea_text,
+                detaild_address_text,
+                guestnum_text,
+                breakfast,
+                roomtype,
+                hotel_cost_text,
+                hotel_register_text});
 
 
-            String data = bs_num + "|" + bs_user_num + "|"+ hotel_name_text + "|" + hotelarea_text + "|" + detaild_address_text + "|" + guestnum_text + "|" + breakfast + "|" + roomtype + "|" + hotel_cost_text + "|" + hotel_register_text;
-
-            // 파일에 데이터 추가하기
             BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
-            writer.write(data+"\n");
+            writer.write(bs_num + "|" + bs_user_num + "|" + hotel_name_text + "|" + hotelarea_text + "|" + detaild_address_text + "|" + guestnum_text + "|" + breakfast + "|" + roomtype + "|" + hotel_cost_text + "|" + hotel_register_text + "\n");
             writer.close();
-            
-            
             
             
 
@@ -494,24 +497,27 @@ public class HotelBS extends JPanel implements BusinessInterface,ButtonInterface
         
     }
     
-    private void search(JTable airplane_table){
+    private void search(JTable hotel_table){
         // 사용자가 선택한 검색 기준과 입력한 텍스트 가져오기
         search_combo_text = (String)search_combo.getSelectedItem();
         text = search_text.getText();
     
-        // 파일에서 항공사 정보 읽어오기
+       
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
-            DefaultTableModel airplane_model = (DefaultTableModel) airplane_table.getModel();
-            airplane_model.setRowCount(0); // 테이블 초기화
+            hotel_model = (DefaultTableModel) hotel_table.getModel();
+            hotel_model.setRowCount(0); // 테이블 초기화
+            
         
             while ((line = reader.readLine()) != null) {
                 String[] data = line.split("\\|");
                 if (search_combo_text.equals("전체 조회") || 
                     (search_combo_text.equals("호텔 이름") && data.length >= 3 && data[2].equals(text))) {
-                    airplane_model.addRow(data);
+                    hotel_model.addRow(data);
+                   
                 }
             }
+            
         } catch (IOException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "파일 읽기 오류.", "오류", JOptionPane.ERROR_MESSAGE);
@@ -541,6 +547,12 @@ public class HotelBS extends JPanel implements BusinessInterface,ButtonInterface
 
                 
         if(row!=-1){ // 만약 선택된 행이 있다면
+            
+            hotel_model = (DefaultTableModel) hotel_table.getModel();
+            
+            String bs_num = (String) hotel_model.getValueAt(row, 0);
+            String bs_user_num = (String) hotel_model.getValueAt(row, 1);
+            
             String[] new_hotel_input={ // 각각의 새로운(수정돤) 정보를 배열로 저장
                 hotel_name.getText(),
                 (String) hotel_area.getSelectedItem(),
@@ -552,14 +564,38 @@ public class HotelBS extends JPanel implements BusinessInterface,ButtonInterface
                 hotel_register.getText()
             };
          
-            DefaultTableModel model = (DefaultTableModel) hotel_table.getModel();
-            for(int i=0; i<new_hotel_input.length; i++){
-                if(new_hotel_input[i].isEmpty()){ // 수정된 정보가 없으면
-                    new_hotel_input[i] = (String) hotel_model.getValueAt(row,i+1); // 현재 값을 유지 (get을 쓴거임)
+            
+            for (int i = 0; i < new_hotel_input.length; i++) {
+                if (new_hotel_input[i] == null || new_hotel_input[i].isEmpty()) { // 수정된 정보가 없으면
+                    new_hotel_input[i] = (String) hotel_model.getValueAt(row, i + 2); // 현재 값을 유지
                 }
-                hotel_model.setValueAt(new_hotel_input[i],row,i+1); 
+                hotel_model.setValueAt(new_hotel_input[i], row, i + 2);
+            }
+            
+            hotel_model.setValueAt(bs_num, row, 0);
+            hotel_model.setValueAt(bs_user_num, row, 1);
+            
+            // 파일에 저장
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                for (int i = 0; i < hotel_model.getRowCount(); i++) {
+                    StringBuilder row_data = new StringBuilder();
+                    for (int j = 0; j < hotel_model.getColumnCount(); j++) {
+                        Object value = hotel_model.getValueAt(i, j);
+                        row_data.append(value != null ? value.toString() : "");
+                        if (j < hotel_model.getColumnCount() - 1) {
+                            row_data.append("|");
+                        }
+                    }
+                    writer.write(row_data.toString() + "\n");
+
+                    writer.newLine();
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(null, "파일 저장 중 오류가 발생했습니다.", "오류", JOptionPane.ERROR_MESSAGE);
             }
         }
+        
          
         
     }
@@ -569,10 +605,16 @@ public class HotelBS extends JPanel implements BusinessInterface,ButtonInterface
     private void delete(JTable hotel_table){
         
         
-        int row = hotel_table.getSelectedRow(); // 삭제된 행의 인덱스
+        row = hotel_table.getSelectedRow(); // 삭제된 행의 인덱스
+        
+        if (row == -1) {
+            JOptionPane.showMessageDialog(null, "삭제할 행을 선택하세요.", "오류", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         
         hotel_model = (DefaultTableModel) hotel_table.getModel();
-        
+        HotelOriginator originator = new HotelOriginator();
+
         column = hotel_model.getColumnCount();
         String[] row_data = new String[column];
         for(int i=0; i<column; i++){
@@ -584,8 +626,8 @@ public class HotelBS extends JPanel implements BusinessInterface,ButtonInterface
                  row_data[i] = "";
              }
         }
-        
-        HotelOriginator originator = new HotelOriginator();
+
+       
         originator.setDeleteRow(row_data); // 삭제된 데이터를 오리지네이터에 저장
         
         HotelMemento memento = originator.createMemento(); // 메멘토 생성
@@ -595,7 +637,7 @@ public class HotelBS extends JPanel implements BusinessInterface,ButtonInterface
         hotel_model.removeRow(row); // 열 삭제
         
         for (int i = row; i < hotel_model.getRowCount(); i++) { // 현재 테이블 모델의 행 수 반환
-            hotel_model.setValueAt(i + 1, i, 0); // 비즈니스 넘버 재할당 : i번째 행의 비즈니스 넘버를 i+1로 수정하여 번호를 한칸씩 앞당기기!!
+            hotel_model.setValueAt("H" + (i + 1), i, 0); // 비즈니스 넘버 재할당 : i번째 행의 비즈니스 넘버를 i+1로 수정하여 번호를 한칸씩 앞당기기!!
             
         }
        
@@ -618,7 +660,7 @@ public class HotelBS extends JPanel implements BusinessInterface,ButtonInterface
         // 비즈니스 번호 순서대로 변경
         column = hotel_model.getRowCount();
         for(int i=0; i<column; i++){
-            hotel_model.setValueAt(i+1,i,0);
+            hotel_model.setValueAt("H" + (i + 1), i, 0);
         }
  
     }
